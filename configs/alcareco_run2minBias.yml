@@ -1,0 +1,83 @@
+samples:
+  SiStripCalMinBias_Express_Run2018D:
+    db: /eos/cms/store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2018'
+  SiStripCalMinBias_Express_Run2018C:
+    db: /eos/cms/store/express/Run2018C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2018'
+  SiStripCalMinBias_Express_Run2018B:
+    db: /eos/cms/store/express/Run2018B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2018'
+  SiStripCalMinBias_Express_Run2018A:
+    db: /eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2018'
+        ##################
+  SiStripCalMinBias_Express_Run2017H:
+    db: /eos/cms/store/express/Run2017H/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017H:
+    db: /eos/cms/store/express/Run2017G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017F:
+    db: /eos/cms/store/express/Run2017F/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017E:
+    db: /eos/cms/store/express/Run2017E/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017D:
+    db: /eos/cms/store/express/Run2017D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017C:
+    db: /eos/cms/store/express/Run2017C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017B:
+    db: /eos/cms/store/express/Run2017B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+  SiStripCalMinBias_Express_Run2017A:
+    db: /eos/cms/store/express/Run2017A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
+    split: 20
+    era: '2017'
+    ##########################
+  SiStripCalMinBias_Express_Run2016A:
+    db: /eos/cms/store/express/Run2016A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016B:
+    db: /eos/cms/store/express/Run2016B/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016C:
+    db: /eos/cms/store/express/Run2016C/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016D:
+    db: /eos/cms/store/express/Run2016D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016E:
+    db: /eos/cms/store/express/Run2016E/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016F:
+    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016G:
+    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
+  SiStripCalMinBias_Express_Run2016H:
+    db: /eos/cms/store/express/Run2016H/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2
+    split: 20
+    era: '2016'
