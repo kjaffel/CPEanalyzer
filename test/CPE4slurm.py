@@ -1,71 +1,70 @@
-#!/usr/bin/python
-import os, os.path
-import sys
-import glob
-import yaml
-import datetime
-import argparse
+import FWCore.ParameterSet.Config as cms
+import FWCore.ParameterSet.VarParsing as VarParsing
 
-from CP3SlurmUtils.Configuration import Configuration
-from CP3SlurmUtils.SubmitWorker import SubmitWorker
+process = cms.Process("CPEana")
 
-import logging
-logger = logging.getLogger("CPEAnalyser->SkimProducer")
+### Standard Configurations
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.EventContent.EventContent_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
+process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
 
-def RunSKIMMER(yml=None, outputDIR= None, isTest=False):
-    config = Configuration()
-    config.sbatch_partition = 'cp3'
-    config.sbatch_qos = 'cp3'
-    config.cmsswDir = os.path.dirname(os.path.abspath(__file__))
-    config.sbatch_chdir = os.path.join(config.cmsswDir, options.outputdir ) 
-    config.sbatch_time = '0-02:00'
-    sbatch_memPerCPU = '2000'
-    #config.environmentType = 'cms'
-    config.inputSandboxContent = ["skimProducer_cfg.py"]
-    config.stageoutFiles = ['*.root']
-    config.stageoutDir = config.sbatch_chdir
-    config.inputParamsNames = ["inputfile","outputfile"]
-    #yaml_path = os.path.join(config.cmsswDir, '/SiStripCPE/CPEanalyzer/test/alcareco_2018analysis.yml')
-    yaml_path = os.path.join(config.cmsswDir, options.yml)
-    with open(yaml_path,"r") as file:
-        ymlConfiguration = yaml.load(file)#,Loader=yaml.FullLoader)
-    
-    for smp, cfg in ymlConfiguration["samples"].items():
-        print (smp, cfg["db"])
-        if isTest:
-            outputdir_Persmp = os.path.join(config.stageoutDir, "output", "%s"%smp)
-            if not os.path.exists(outputdir_Persmp):
-                os.makedirs(outputdir_Persmp)
-            config.inputParams = [[cfg["db"], os.path.join(outputdir_Persmp, "Output_isTest.root")]]
-        else:
-            try: 
-                files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
-            except Exception as ex:
-                logger.exception("{} root files not found ** ".format( files))
-            filesPerJob = cfg["split"]
-            files_=[file.replace('/storage/data/cms/','') for file in files]
-            sliced = [files_[i:i+filesPerJob] for i in range(0,len(files_),filesPerJob)]
-            outputdir_Persmp = os.path.join(config.stageoutDir, "output", "%s"%smp)
-            if not os.path.exists(outputdir_Persmp):
-                os.makedirs(outputdir_Persmp)
-            config.inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "Output_%s.root"%idx) ] for idx,input in enumerate(sliced) ]
-    config.payload = \
-    """
-    echo ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}
-    cmsRun skimProducer_cfg.py inputFiles=${inputfile} outputFile=${outputfile}
-    """
-    submitWorker = SubmitWorker(config, submit=True, yes=True, debug=True, quiet=True)
-    submitWorker()
-    
-if __name__ == '__main__':
-    current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    parser = argparse.ArgumentParser(description='Run Skim Producer')
-    parser.add_argument('-o', '--outputdir', action='store', dest='outputdir', type=str, default=os.makedirs("." + current_time), help='** HistFactory output path')
-    parser.add_argument('-y', '--yml', action='store', dest='yml', type=str, default=None, help='** Yml file that include your AlcaReco samples')
-    parser.add_argument('--isTest', action='store_true', help='')
-    options = parser.parse_args()
-    if os.path.exists(options.outputdir):
-        logger.warning("Output directory {} exists, previous results may be overwritten".format( options.outputdir))
-    print ('slurm Output dir :', options.outputdir)
-    print ('yaml input files :', options.yml)
-    RunSKIMMER(yml=options.yml, outputDIR= options.outputdir, isTest = options.isTest) 
+### global tag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data_GRun', '')
+# process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_GRun', '')
+
+### initialize MessageLogger and output report
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.threshold = 'INFO'
+process.MessageLogger.categories.append('CPEana')
+process.MessageLogger.cerr.INFO = cms.untracked.PSet(
+        limit = cms.untracked.int32(-1)
+        )
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+
+# setup 'analysis' options
+options = VarParsing.VarParsing ('analysis')
+options.outputFile = 'CPE_defaultOutput.root'
+options.inputFiles= ''#/store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/000/321/230/00000/7281AF0F-36A0-E811-A56D-FA163E85FA06.root'
+options.maxEvents = -1
+options.parseArguments()
+
+### Events and data source
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring (options.inputFiles) )
+
+### Track refitter specific stuff
+process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
+import RecoTracker.TrackProducer.TrackRefitter_cfi
+import CommonTools.RecoAlgos.recoTrackRefSelector_cfi
+process.mytkselector = CommonTools.RecoAlgos.recoTrackRefSelector_cfi.recoTrackRefSelector.clone()
+process.mytkselector.src = 'ALCARECOSiStripCalMinBias'
+process.mytkselector.quality = ['highPurity']
+process.mytkselector.min3DLayer = 2
+process.mytkselector.ptMin = 0.5
+process.mytkselector.tip = 1.0
+process.myRefittedTracks = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
+process.myRefittedTracks.src= 'mytkselector'
+process.myRefittedTracks.NavigationSchool = ''
+process.myRefittedTracks.Fitter = 'FlexibleKFFittingSmoother'
+
+### Analyzer
+process.CPEanalysis = cms.EDAnalyzer('CPEanalyzer',
+                                         minTracks=cms.untracked.uint32(0),
+                                         tracks = cms.untracked.InputTag("ALCARECOSiStripCalMinBias",""),
+                                         trajectories = cms.untracked.InputTag('myRefittedTracks'),
+                                         association = cms.untracked.InputTag('myRefittedTracks'),
+                                         clusters = cms.untracked.InputTag('ALCARECOSiStripCalMinBias'),
+                                         StripCPE = cms.ESInputTag('StripCPEfromTrackAngleESProducer:StripCPEfromTrackAngle')
+                             )
+
+### TFileService: output histogram or ntuple
+process.TFileService = cms.Service("TFileService",fileName = cms.string(options.outputFile))
+
+### Finally, put together the sequence
+process.p = cms.Path(process.offlineBeamSpot*process.mytkselector+process.myRefittedTracks+process.CPEanalysis)
