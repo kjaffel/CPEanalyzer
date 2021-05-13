@@ -18,10 +18,10 @@ In order to allow parallelisation and fast iterations, a private skim of files i
 ```python
 python CPE4slurm.py --isTest --task skimmer -o mytestDIR
 ```
-``-o``/ ``--output`` :  Output directory 
-``-y``/``--yml``    :  Yml file that include your AlcaReco samples should be saved in: configs/
-``--task``   :  skim/HitResol 
-``--isTest`` :  will pass one root file on slurm as cross-check
+- ``-o``/ ``--output``:  Output directory 
+- ``-y``/``--yml``    :  Yml file that include your AlcaReco samples should be saved in: configs/
+- ``--task``   :  skim/HitResol 
+- ``--isTest`` :  will pass one root file on slurm as cross-check
 ## Event, Track and Hit Selections:
 The strip hit resolution is computed by using hits in overlapping modules of the same layer (["Pair Method"](https://indico.cern.ch/event/305395/contributions/701396/attachments/580300/798934/nmccoll_3_13_RecHitRes.pdf)).
 
@@ -59,7 +59,7 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 ```
 
 ## My Talks in Strip Calibration and Local Reconstruction meeting:
-- []
+- []()
 - [11.11 CPE reparameterization update](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
 ## References:
 - [ CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
@@ -68,4 +68,4 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 - [PHD-thesis Chapter4:Associated top-quark-pair and b-jetproduction in the dilepton channelat√s = 8  TeV as test of QCDand background to tt+Higgsproduction](https://bib-pubdb1.desy.de/record/222384/files/thesis.pdf)
 - [ SiStrip cluster MC truth tools ](https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideStripClusterMCtruth)
 - [ Analysis Tutorial](http://www.t2.ucsd.edu/twiki2/bin/view/UCSDTier2/AnalysisTutorial?sortcol=table;table=up#Efficiency_Plots)
--[Strip hit resolution of CMS Tracker analysis: DOI:10.13140/RG.2.2.11136.84480](https://www.researchgate.net/publication/317633066_Strip_hit_resolution_of_CMS_Tracker_analysis)
+- [Strip hit resolution of CMS Tracker analysis: DOI:10.13140/RG.2.2.11136.84480](https://www.researchgate.net/publication/317633066_Strip_hit_resolution_of_CMS_Tracker_analysis)

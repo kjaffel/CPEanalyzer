@@ -10,7 +10,33 @@ from CP3SlurmUtils.Configuration import Configuration
 from CP3SlurmUtils.SubmitWorker import SubmitWorker
 
 import logging
+LOG_LEVEL = logging.DEBUG
+stream = logging.StreamHandler()
+stream.setLevel(LOG_LEVEL)
 logger = logging.getLogger("CPEAnalyser: algorithm used to determine the position and errors of the CMS Strip clusters")
+logger.setLevel(LOG_LEVEL)
+logger.addHandler(stream)
+try:
+    import colorlog
+    from colorlog import ColoredFormatter
+    formatter = ColoredFormatter(
+                "%(log_color)s%(levelname)-8s%(reset)s %(log_color)s%(message)s",
+                datefmt=None,
+                reset=True,
+                log_colors={
+                        'DEBUG':    'cyan',
+                        'INFO':     'green',
+                        'WARNING':  'blue',
+                        'ERROR':    'red',
+                        'CRITICAL': 'red',
+                        },
+                secondary_log_colors={},
+                style='%'
+                )
+    stream.setFormatter(formatter)
+except ImportError:
+    # https://pypi.org/project/colorlog/
+    pass
 
 def ClusterParameterEstimator_4SLURM(yml=None, outputDIR= None, task=None, isTest=False):
     config = Configuration()
@@ -24,20 +50,20 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputDIR= None, task=None, isTes
     config.inputSandboxContent = ["skimProducer.py" if task=="skim" else("SiStripHitResol.py" if task=="HitResol" else("CPEstimator.py"))]
     config.stageoutFiles = ['*.root']
     config.stageoutDir = config.sbatch_chdir
-    config.inputParamsNames = ["inputfile","outputfile"]
+    config.inputParamsNames = ["inputfile","outputfile", "task"]
     
-    print( yml, outputDIR, task, isTest )
-    yaml_path = os.path.join(config.cmsswDir, options.yml)
+    yaml_path = os.path.join(config.cmsswDir, yml)
     with open(yaml_path,"r") as file:
-        ymlConfiguration = yaml.load(file)#,Loader=yaml.FullLoader)
-    
+        #ymlConfiguration = yaml.load(file)
+        ymlConfiguration = yaml.load(file, Loader=yaml.FullLoader)
+
     for smp, cfg in ymlConfiguration["samples"].items():
         print (smp, cfg["db"])
         if isTest:
             outputdir_Persmp = os.path.join(config.stageoutDir, "output", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            config.inputParams = [[cfg["db"], os.path.join(outputdir_Persmp, "Output_isTest.root")]]
+            config.inputParams = [[cfg["db"], os.path.join(outputdir_Persmp, "Output_isTest.root"), task]]
         else:
             try: 
                 files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
@@ -49,14 +75,15 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputDIR= None, task=None, isTes
             outputdir_Persmp = os.path.join(config.stageoutDir, "output", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            config.inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "Output_%s.root"%idx) ] for idx,input in enumerate(sliced) ]
+            config.inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "Output_%s.root"%idx), task] for idx,input in enumerate(sliced) ]
     
     config.payload = \
     """
     echo ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}
-    if [ "$task" = "skim" ]; then
+    echo "heloo2" $job 
+    if [[ "$task" == *"skim"* ]]; then
         cmsRun skimProducer.py inputFiles=${inputfile} outputFile=${outputfile}
-    elif [ "$task" = "HitResol" ]; then
+    elif [[ "$task" == "HitResol" ]]; then
         cmsRun SiStripHitResol.py inputFiles=${inputfile} outputFile=${outputfile}
     else
         cmsRun CPEstimator.py inputFiles=${inputfile} outputFile=${outputfile}
