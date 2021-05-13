@@ -1,4 +1,4 @@
-#include "UserCode/SiStripHitResolution/interface/TrajectoryAtInvalidHit.h"
+#include "SiStripCPE/CPEanalyzer/interface/TrajectoryAtInvalidHit.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"

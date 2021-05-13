@@ -302,8 +302,8 @@ CPEanalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      geom2Branches_.detid = detid2.rawId();
      geom1Branches_.subdet = detid1.subdetId();
      geom2Branches_.subdet = detid2.subdetId();
-     geom1Branches_.moduleGeometry = tTopo->moduleGeometry(detid1);
-     geom2Branches_.moduleGeometry = tTopo->moduleGeometry(detid2);
+     //geom1Branches_.moduleGeometry = tTopo->moduleGeometry(detid1);
+     //geom2Branches_.moduleGeometry = tTopo->moduleGeometry(detid2);
      geom1Branches_.stereo = tTopo->isStereo(detid1);
      geom2Branches_.stereo = tTopo->isStereo(detid2);
      geom1Branches_.layer = tTopo->layer(detid1);

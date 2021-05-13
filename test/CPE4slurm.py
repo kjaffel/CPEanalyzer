@@ -26,6 +26,7 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputDIR= None, task=None, isTes
     config.stageoutDir = config.sbatch_chdir
     config.inputParamsNames = ["inputfile","outputfile"]
     
+    print( yml, outputDIR, task, isTest )
     yaml_path = os.path.join(config.cmsswDir, options.yml)
     with open(yaml_path,"r") as file:
         ymlConfiguration = yaml.load(file)#,Loader=yaml.FullLoader)
@@ -76,8 +77,8 @@ if __name__ == '__main__':
     
     if os.path.exists(options.outputdir):
         logger.warning("Output directory {} exists, previous results may be overwritten".format( options.outputdir))
-    if isTest:
-        YmlFile ='../configs/alcareco_2018D_localtest.yml'
+    if options.isTest:
+        YmlFile ='../configs/alcareco_2018DExpress_localtest.yml'
     else:
         YmlFile = options.yml
     print ('slurm Output dir :', options.outputdir)

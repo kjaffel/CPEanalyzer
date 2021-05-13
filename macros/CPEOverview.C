@@ -1069,8 +1069,3 @@ CPEOverview::printOverview(const TString& outputFileName, const HistLevel& histL
   eventPadCounter_.first = eventPadCounter_.second = trackPadCounter_.first = trackPadCounter_.second = sectorCounter_ = 1;
   mSectorPadCounter_.clear();
 }
-
-
-
-
-

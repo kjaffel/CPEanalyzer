@@ -1,4 +1,4 @@
-#include "SiStripCPE/CPEanalyzer/interface/SistripOverlapHit.h"
+#include "SiStripCPE/CPEanalyzer/interface/SiStripOverlapHit.h"
 #include <math.h> 
 
 SiStripOverlapHit::SiStripOverlapHit(TrajectoryMeasurement const& measA, TrajectoryMeasurement const& measB) {

@@ -1,5 +1,4 @@
 samples:
   SiStripCalMinBias_Express_Run2018D:
-    db: /store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/
-    split: 20
+    db: /store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/000/321/305/00000/DCD25B1E-47A0-E811-B58F-FA163EA70EE0.root
     era: '2018'

@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    UserCode/CPEanalyzer
+// Package:    SiStripCPE/CPEanalyzer
 // Class:      SiStripOverlapHit
 //
-/**\class SiStripOverlapHit SiStripOverlapHit.h UserCode/CPEanalyzer/interface/SiStripOverlapHit.cc
+/**\class SiStripOverlapHit SiStripOverlapHit.h SiStripCPE/CPEanalyzer/interface/SiStripOverlapHit.cc
 
  Description: A pair of hits on overlaping modules
 
@@ -15,8 +15,8 @@
 //         Created:  Fri, 20 Sep 2019 14:45:00 GMT
 //
 //
-#ifndef _USERCODE_CPEANALYZER_SISTRIPOVERLAPI_HIT_H_
-#define _USERCODE_CPEANALYZER_SISTRIPOVERLAPI_HIT_H_
+#ifndef SiStripOverlapHit_H
+#define SiStripOverlapHit_H
 
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"

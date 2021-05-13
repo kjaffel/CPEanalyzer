@@ -50,34 +50,34 @@ samples:
     era: '2017'
     ##########################
   SiStripCalZeroBias_Express_Run2016A:
-    db: /eos/cms/store/express/Run2016A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016B:
-    db: /eos/cms/store/express/Run2016B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016C:
-    db: /eos/cms/store/express/Run2016C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016D:
-    db: /eos/cms/store/express/Run2016D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016E:
-    db: /eos/cms/store/express/Run2016E/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016E/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016F:
-    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016G:
-    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
   SiStripCalZeroBias_Express_Run2016H:
-    db: /eos/cms/store/express/Run2016H/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2
+    db: /eos/cms/store/express/Run2016H/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     split: 20
     era: '2016'
