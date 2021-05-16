@@ -20,7 +20,7 @@ python CPE4slurm.py --isTest --task skimmer -o mytestDIR
 ```
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  Yml file that include your AlcaReco samples should be saved in: configs/
-- ``--task``   :  skim/HitResol 
+- ``--task``   :  skim/hitresolution 
 - ``--isTest`` :  will pass one root file on slurm as cross-check
 ## Event, Track and Hit Selections:
 The strip hit resolution is computed by using hits in overlapping modules of the same layer (["Pair Method"](https://indico.cern.ch/event/305395/contributions/701396/attachments/580300/798934/nmccoll_3_13_RecHitRes.pdf)).
