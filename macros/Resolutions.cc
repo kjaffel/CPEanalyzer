@@ -12,13 +12,10 @@ vector<float> HitDXVector;
 vector<float> TrackDXVector;
 vector<float> TrackDXEVector;
 
-std::string InputFileString;
 std::string HitResoFileName;
 std::string GaussianFitsFileName;
 
-
-
-void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL){
+void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString){
 
   std::string CutFlowReportString;
   std::string DoubleDiffString;
@@ -49,8 +46,6 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
         		default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
   		}
 
-        //InputFileString = "hitresol_ALCARECO.root"; 
-		InputFileString = "SiStripCalMinBias_Express_Run2018D.root"; 
 		break;
 
 	case 1: switch(Unit_Int){
@@ -75,8 +70,6 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                         default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
                 }
 
-		//InputFileString = "hitresol_ALCARECO_UL.root"; 
-		InputFileString = "SiStripCalMinBias_Express_Run2018D.root"; 
 		break;
 	default: std::cout << "The UL input parameter must be set to 0 (for ALCARECO) or 1 (for UL ALCARECO)." << std::endl; break;
   }
@@ -319,9 +312,8 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   HitResolutionVector.push_back(HitResolution);
 
   //Printing the resolution 
-  std::cout << '\n' << std::endl;
   std::cout << "The hit resolution for tracker region " << region << " is: " << HitResolution << std::endl;
-  std::cout << '\n' << std::endl;
+  //std::cout << '\n' << std::endl;
 
   //Cut flow report
   auto allCutsReport = d.Report();
@@ -335,11 +327,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
 }
 
-void Resolutions(){
-
-  int UnitInteger = 1;
-  int ULInteger = 0;
-
+void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileString, const string& InputFilePath, const bool& DOESEXIST){
 
   vector<std::string> LayerNames = {"TIB_L1",       "TIB_L2",           "TIB_L3",    "TIB_L4",
 				    "Side_TID",     "Wheel_TID",        "Ring_TID",   "TOB_L1",
@@ -349,11 +337,9 @@ void Resolutions(){
 				    "Pixel_Barrel", "Pixel_EndcapDisk"};
 
 
-  for(int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), UnitInteger, ULInteger);}
-
+  for(int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString);}
   std::ofstream HitResoTextFile;
   HitResoTextFile.open(HitResoFileName);
-
   auto Width = 28;
 
   HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::endl;
@@ -362,7 +348,22 @@ void Resolutions(){
 	HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::endl;
 
   }
-
-  system("mkdir HitResolutionValues; mkdir GaussianFits; mkdir CutFlowReports; mv CutFlowReport_* CutFlowReports/; mv HitResolutionValues_* HitResolutionValues/; mv GaussianFits_* GaussianFits/;");
-
+ 
+  if (DOESEXIST) {
+      /* Directory exists. */
+      std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
+      string cmd = "mv ";
+      cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+      // Convert string to const char * as system requires
+      // parameter of type const char *
+      const char *command = cmd.c_str();
+      system(command);
+  } else {
+      /* Directory does not exist. */
+      string cmd = "mkdir ";
+      cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+      std::cout << "cmd :" << cmd << std::endl; 
+      const char *command = cmd.c_str();
+      system(command);
+  } 
 }

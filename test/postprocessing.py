@@ -1,5 +1,6 @@
 import sys
 sys.dont_write_bytecode=True
+
 import logging
 LOG_LEVEL = logging.DEBUG
 stream = logging.StreamHandler()
@@ -27,16 +28,17 @@ try:
                 )
     stream.setFormatter(formatter)
 except ImportError:
-    # https://pypi.org/project/colorlog/
+    print(" Add colours to the output of Python logging module via : https://pypi.org/project/colorlog/")
     pass
-import os
-import os.path
+
+import os, os.path
+import ROOT
 import subprocess
 import batch_slurm
-from collections import defaultdict
 import argparse
 import glob 
 import yaml
+from collections import defaultdict
 from functools import partial
 
 class SampleTask:
@@ -57,9 +59,9 @@ def getTasks(analysisCfgs=None):
 
 def FINALIZE_JOBS(workdir='', finalize=False):
     resultsdir = os.path.join(workdir, "outputs")
-    print os.environ["CMSSW_BASE"] 
-    analysisCfgs = os.path.join("/nfs/scratch/fynu/kjaffel/CPEanalyzer/CMSSW_11_2_2_patch1/src/SiStripCPE/CPEanalyzer/test", workdir, "analysis.yml")
-    tsk_path = os.path.join("/nfs/scratch/fynu/kjaffel/CPEanalyzer/CMSSW_11_2_2_patch1/src/SiStripCPE/CPEanalyzer/test", workdir,"outputs")
+    cwd = os.getcwd()
+    analysisCfgs = os.path.join(cwd, workdir, "analysis.yml")
+    tsk_path = os.path.join(cwd, workdir,"outputs")
     if finalize:
         tasks = getTasks(analysisCfgs=analysisCfgs)
         tasks_notfinalized = [ tsk for tsk in tasks if not os.path.exists(os.path.join(resultsdir, tsk.outputFile)) ]
@@ -71,12 +73,11 @@ def FINALIZE_JOBS(workdir='', finalize=False):
             batchDir = workdir #os.path.join(workdir, "batch")
             outputs, id_noOut = batch_slurm.findOutputsForCommands(batchDir,
                     { tsk.name: partial(cmdMatch, smpNm="{}/{}".format(tsk_path, tsk.name)) for tsk in tasks_notfinalized })
-            print ("outputs = ", outputs, "id_noOut = ", id_noOut)
             if id_noOut:
                 logger.error("Missing outputs for subjobs {0}, so no postprocessing will be run".format(", ".join(str(sjId) for sjId in id_noOut)))
                 if hasattr(batch_slurm, "getResubmitCommand"):
                     resubCommand = " ".join(batch_slurm.getResubmitCommand(batchDir, id_noOut))
-                    logger.info("Resubmit with '{}' (and possibly additional options)".format(resubCommand))
+                    logger.info("Resubmit with '{}' ".format(resubCommand))
                 return
             
             aProblem = False
@@ -88,13 +89,11 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                 tskOut_by_name = defaultdict(list)
                 for fn in tskOut:
                     tskOut_by_name[os.path.basename(fn)].append(fn)
-                print( tskOut_by_name ,"tskOut_by_name")
                 for outFileName, outFiles in tskOut_by_name.items():
                     if nExpected != len(outFiles):
                         logger.error("Not all jobs for {} produced an output file {} ({:d}/{:d} found), cannot finalize".format(tsk.name, outFileName, len(outFiles), nExpected))
                         aProblem = True
                     else:
-                        print( 'outFileName:', outFileName , "outFiles:", outFiles)
                         haddCmd = ["hadd", "-f", os.path.join(resultsdir, "{}.root".format(tsk.name))]+outFiles
                         try:
                             logger.debug("Merging outputs for sample {0} with {1}".format(tsk.name, " ".join(haddCmd)))
@@ -107,9 +106,26 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                 return
             else:
                 logger.info("All tasks finalized")
+
+def RUN_PLOTTER(workdir=None):
+    ROOT.gROOT.ProcessLine(".L ../macros/Resolutions.cc")
+    units = {'cm': 1, 'pitch':0 } 
+    compaigns = {'PreLegacy':0}#, 'ULegacy':1}
+    for k1 in compaigns.keys():
+        for i, k2 in enumerate(units.keys()):
+            dircreated = (True if id==1 else(False)) 
+            for rootfile in glob.glob(os.path.join(workdir, 'outputs','*.root')): 
+                rootpath = rootfile.replace('.root', '')
+                try:
+                    logger.debug("Resolution from 1D gaussian fit for {} compaign in {} units :".format(k1, k2) )
+                    ROOT.Resolutions(units[k2], compaigns[k1], rootfile, rootpath, dircreated)
+                except subprocess.CalledProcessError:
+                    logger.error("Failed to run .L ../macros/Resolutions.cc with : {0}".format(" ".join(rootfile)))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RUN CPE FIANLIZE')
     parser.add_argument('--finalize', action='store_true', default=True, help='')
     parser.add_argument('--workdir', required=True, help='')
     options = parser.parse_args()
     FINALIZE_JOBS(workdir=options.workdir, finalize=options.finalize)
+    RUN_PLOTTER(workdir=options.workdir)
