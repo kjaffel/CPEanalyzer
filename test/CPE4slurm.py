@@ -43,6 +43,9 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
         ymlConfiguration = yaml.load(file, Loader=yaml.FullLoader)
 
     for smp, cfg in ymlConfiguration["samples"].items():
+        if smp not startswith.("SiStripCalZeroBias_") and not startswith.("SiStripCalCosmics_") and not startswith.("SiStripCalMinBias_"):
+            logger.error("The sample names in Yaml file : {} should start by one of these suffix : [SiStripCalZeroBias_ , SiStripCalCosmics_, SiStripCalMinBias_ ] , since it is used later as anInputTagName in process.TrackRefitterP5.clone(src=cms.InputTag(InputTagName)) ".format(analysisCfgs))
+            continue
         if isTest:
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
@@ -59,7 +62,6 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            print ( smp )
             inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%smp] for idx,input in enumerate(sliced) ]
     return inputParams 
 
@@ -76,7 +78,7 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTes
     config.inputSandboxContent = ["skimProducer.py" if task=="skim" else("SiStripHitResol.py" if task=="hitresolution" else("CPEstimator.py"))]
     config.stageoutFiles = ['*.root']
     config.stageoutDir = config.sbatch_chdir
-    config.inputParamsNames = ["inputFiles","outputFile", "task", "sample"]
+    config.inputParamsNames = ["inputFiles","outputFile", "task","sample"]
     
     analysisCfgs = os.path.join(config.cmsswDir, yml)
     config.inputParams = getTasks (task=task, analysisCfgs=analysisCfgs, cmsswDir=config.cmsswDir, stageoutDir=config.stageoutDir, isTest=isTest) 
