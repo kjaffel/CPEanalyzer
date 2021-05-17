@@ -22,7 +22,8 @@ process.MessageLogger.cerr.INFO = cms.untracked.PSet(
                         )
 ###########################################################
 outputFile=options.outputFile
-InputTagName = "ALCARECO"+outputFile.split('_')[0]
+InputTagName = "ALCARECO"+outputFile.split('/')[-2].split('_')[0]
+print("InputTagName:", InputTagName )
 fileNames=cms.untracked.vstring(options.inputFiles)
 ###########################################################
 process.source = cms.Source("PoolSource", fileNames=fileNames)
