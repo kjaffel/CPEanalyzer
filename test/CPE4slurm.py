@@ -5,6 +5,7 @@ import glob
 import yaml
 import datetime
 import argparse
+import collections
 import shutil
 from CP3SlurmUtils.Configuration import Configuration
 from CP3SlurmUtils.SubmitWorker import SubmitWorker
@@ -35,17 +36,31 @@ try:
                 )
     stream.setFormatter(formatter)
 except ImportError:
-    # https://pypi.org/project/colorlog/
+    print(" Add colours to the output of Python logging module via : https://pypi.org/project/colorlog/")
     pass
 
+def update_plotItFiles(data= None, era= None, rootf= None):
+    data.update( {"{}:".format(rootf): {
+            "type": "data",
+            "legend": "data",
+            "group": "data",
+            "era": era,
+            } })
+    return data
+
 def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, isTest=False):
+    data = collections.defaultdict(dict)
+    
     with open(analysisCfgs,"r") as file:
         ymlConfiguration = yaml.load(file, Loader=yaml.FullLoader)
 
     for smp, cfg in ymlConfiguration["samples"].items():
-        if smp not startswith.("SiStripCalZeroBias_") and not startswith.("SiStripCalCosmics_") and not startswith.("SiStripCalMinBias_"):
+        if not smp.startswith("SiStripCalZeroBias_") and not smp.startswith("SiStripCalCosmics_") and not smp.startswith("SiStripCalMinBias_"):
             logger.error("The sample names in Yaml file : {} should start by one of these suffix : [SiStripCalZeroBias_ , SiStripCalCosmics_, SiStripCalMinBias_ ] , since it is used later as anInputTagName in process.TrackRefitterP5.clone(src=cms.InputTag(InputTagName)) ".format(analysisCfgs))
             continue
+        
+        update_plotItFiles(data = data, era=cfg["era"], rootf="{}.root".format(smp))
+        
         if isTest:
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
@@ -54,15 +69,24 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
         else:
             try: 
                 files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
+                files_=[file.replace('/storage/data/cms/','') for file in files]
             except Exception as ex:
                 logger.exception("{} root files not found ** ".format( files))
+            else:
+                #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/000/315/555/00000
+                files_ = glob.glob(os.path.join(cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
+            
             filesPerJob = cfg["split"]
-            files_=[file.replace('/storage/data/cms/','') for file in files]
             sliced = [files_[i:i+filesPerJob] for i in range(0,len(files_),filesPerJob)]
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%smp] for idx,input in enumerate(sliced) ]
+            inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%outputdir_Persmp] for idx,input in enumerate(sliced) ]
+    
+    print (data ) 
+    yamlfile = open(os.path.join(stageoutDir, "plotit_files.yml"), "w")
+    yaml.dump(data, yamlfile)
+    yamlfile.close()
     return inputParams 
 
 def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTest=False):
@@ -106,7 +130,7 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTes
 if __name__ == '__main__':
     current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     parser = argparse.ArgumentParser(description='RUN CPE ANALYSER')
-    parser.add_argument('-o', '--outputdir', action='store', dest='outputdir', type=str, default=os.makedirs("." + current_time), help='** HistFactory output path')
+    parser.add_argument('-o', '--outputdir', action='store', dest='outputdir', type=str, default=os.makedirs(current_time), help='** HistFactory output path')
     parser.add_argument('-y', '--yml', action='store', dest='yml', type=str, default=None, help='** Yml file that include your AlcaReco samples')
     parser.add_argument('--isTest', action='store_true', help='')
     parser.add_argument('--task', action='store', choices= ["skim", "hitresolution"], help='')
@@ -120,5 +144,4 @@ if __name__ == '__main__':
         YmlFile = options.yml
     print ('slurm Output dir :', options.outputdir)
     print ('yaml input files :', YmlFile)
-    
     ClusterParameterEstimator_4SLURM(yml=YmlFile, outputdir= options.outputdir, task=options.task.lower(), isTest = options.isTest) 
