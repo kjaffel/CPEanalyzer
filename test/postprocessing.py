@@ -88,6 +88,8 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                     aProblem = True
                 tskOut_by_name = defaultdict(list)
                 for fn in tskOut:
+                    if not fn.startswith('output_') and not fn.endswith('.root'):
+                        continue
                     tskOut_by_name[os.path.basename(fn)].append(fn)
                 for outFileName, outFiles in tskOut_by_name.items():
                     if nExpected != len(outFiles):
@@ -109,11 +111,11 @@ def FINALIZE_JOBS(workdir='', finalize=False):
 
 def RUN_PLOTTER(workdir=None):
     ROOT.gROOT.ProcessLine(".L ../macros/Resolutions.cc")
-    units = {'cm': 1, 'pitch':0 } 
+    units = {'cm': 1}#, 'pitch':0 } 
     compaigns = {'PreLegacy':0}#, 'ULegacy':1}
     for k1 in compaigns.keys():
-        for i, k2 in enumerate(units.keys()):
-            dircreated = (True if id==1 else(False)) 
+        for idx, k2 in enumerate(units.keys()):
+            dircreated = (True if idx==1 else(False)) 
             for rootfile in glob.glob(os.path.join(workdir, 'outputs','*.root')): 
                 rootpath = rootfile.replace('.root', '')
                 try:
