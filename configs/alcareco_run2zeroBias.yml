@@ -1,103 +1,148 @@
+# lumi : (With normtag) " fb "
+# Collision Runs Only : 
+# 2016: https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2016Analysis
+# 2017: https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#Recipes_for_Luminosity_calculati
+# 2018: https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis
 samples:
   SiStripCalZeroBias_Express_Run2018D:
     db: /eos/cms/store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2018D.dat
     split: 20
     era: '2018'
+    run-range: '320673-325175'
+    lumi: 31.93
   SiStripCalZeroBias_Express_Run2018C:
     db: /eos/cms/store/express/Run2018C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2018C.dat
     split: 20
     era: '2018'
+    run-range: '319337-320065'
+    lumi: 6.94
   SiStripCalZeroBias_Express_Run2018B:
     db: /eos/cms/store/express/Run2018B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2018B.dat
     split: 20
     era: '2018'
+    run-range: '317080-319310'
+    lumi: 7.10
   SiStripCalZeroBias_Express_Run2018A:
     db: /eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2018A.dat
     split: 20
     era: '2018'
+    run-range: '315252-316995'
+    lumi: 14.0
         ##################
   SiStripCalZeroBias_Express_Run2017H:
     db: /eos/cms/store/express/Run2017H/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017H.dat
     split: 20
     era: '2017'
+    run-range: '306896-307082'
+    lumi: 0.22
   SiStripCalZeroBias_Express_Run2017G:
     db: /eos/cms/store/express/Run2017G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017G.dat
     split: 20
     era: '2017'
+    run-range: '306546-306657' # additional run 306705-306826 parked data, not prompt reco 
+    lumi: 0.09
   SiStripCalZeroBias_Express_Run2017F:
     db: /eos/cms/store/express/Run2017F/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017F.dat
     split: 20
     era: '2017'
+    run-range: '305040-306462'
+    lumi: 13.540
   SiStripCalZeroBias_Express_Run2017E:
     db: /eos/cms/store/express/Run2017E/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017E.dat
     split: 20
     era: '2017'
+    run-range: '303824-304797'
+    lumi: 9.278
   SiStripCalZeroBias_Express_Run2017D:
     db: /eos/cms/store/express/Run2017D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017D.dat
     split: 20
     era: '2017'
+    run-range: '302030-303434'
+    lumi: 4.252
   SiStripCalZeroBias_Express_Run2017C:
     db: /eos/cms/store/express/Run2017C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017C.dat
     split: 20
     era: '2017'
+    run-range: '299368-302029'
+    lumi: 9.664
   SiStripCalZeroBias_Express_Run2017B:
     db: /eos/cms/store/express/Run2017B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017B.dat
     split: 20
     era: '2017'
+    run-range: '297046-299329'
+    lumi: 4.823     
   SiStripCalZeroBias_Express_Run2017A:
     db: /eos/cms/store/express/Run2017A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v1/
     files: dascache/SiStripCalZeroBias_Express_Run2017A.dat
     split: 20
     era: '2017'
+    run-range: '294927-297019'
+    lumi: 0.
     ##########################
   SiStripCalZeroBias_Express_Run2016A:
     db: /eos/cms/store/express/Run2016A/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016A.dat
     split: 20
     era: '2016'
+    run-range: '271036-271658' 
+    lumi:
   SiStripCalZeroBias_Express_Run2016B:
     db: /eos/cms/store/express/Run2016B/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016B.dat
     split: 20
     era: '2016'
+    run-range: '272007-275376'
+    lumi:
   SiStripCalZeroBias_Express_Run2016C:
     db: /eos/cms/store/express/Run2016C/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016C.dat
     split: 20
     era: '2016'
+    run-range: '275657-276283'
+    lumi:
   SiStripCalZeroBias_Express_Run2016D:
     db: /eos/cms/store/express/Run2016D/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016D.dat
     split: 20
     era: '2016'
+    run-range: '276315-276811'
+    lumi:
   SiStripCalZeroBias_Express_Run2016E:
     db: /eos/cms/store/express/Run2016E/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016E.dat
     split: 20
     era: '2016'
+    run-range: '276831-277420'
+    lumi:
   SiStripCalZeroBias_Express_Run2016F:
     db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016F.dat
     split: 20
     era: '2016'
+    run-range: '277772-278808'
+    lumi:
   SiStripCalZeroBias_Express_Run2016G:
     db: /eos/cms/store/express/Run2016G/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016G.dat
     split: 20
     era: '2016'
+    run-range: '278820-280385'
+    lumi:
   SiStripCalZeroBias_Express_Run2016H:
     db: /eos/cms/store/express/Run2016H/StreamExpress/ALCARECO/SiStripCalZeroBias-Express-v2/
     files: dascache/SiStripCalZeroBias_Express_Run2016H.dat
     split: 20
     era: '2016'
+    run-range: '280919-284044'
+    lumi:
