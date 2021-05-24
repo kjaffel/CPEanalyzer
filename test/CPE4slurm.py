@@ -124,6 +124,7 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
                 else:
                     files_ = []
                     # open file and read the content in a list
+                    logger.debug(" dascache is found for sample {} , so the files in dascache/{}.dat will be used , if you want to catch changes you made in the configs/yaml . please remove the cache ! " .format(smp, smp ))
                     with open('../configs/dascache/{}.dat'.format(smp), 'r') as filehandle:
                         files_ = [f.rstrip() for f in filehandle.readlines()]
             
