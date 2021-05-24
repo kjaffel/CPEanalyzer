@@ -109,14 +109,23 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             except Exception as ex:
                 logger.exception("{} root files not found ** ".format( files))
             else:
-                #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/*/*/*/*/*.root
-                ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", cfg["db"]]
-                try:
-                    subprocess.check_call(ls_cmd, stdout=subprocess.PIPE) 
-                    files_ = getFileList(subprocess.check_output(ls_cmd).replace('\n', ''))
-                    print( 'Files List : ', files_)
-                except subprocess.CalledProcessError:
-                    logger.error("Failed to run {0}".format(" ".join(ls_cmd)))
+                if not os.path.exists("../configs/dascache/{}.dat".format(smp)):
+                    #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/*/*/*/*/*.root
+                    ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", cfg["db"]]
+                    try:
+                        subprocess.check_call(ls_cmd, stdout=subprocess.PIPE) 
+                        files_ = getFileList(subprocess.check_output(ls_cmd).replace('\n', ''))
+                        print( 'Files List : ', files_)
+                    except subprocess.CalledProcessError:
+                        logger.error("Failed to run {0}".format(" ".join(ls_cmd)))
+                    
+                    with open('../configs/dascache/{}.dat', 'w') as outfile:
+                            outfile.writelines("%s\n" % f for f in files_)
+                else:
+                    files_ = []
+                    # open file and read the content in a list
+                    with open('../configs/dascache/{}.dat'.format(smp), 'r') as filehandle:
+                        files_ = [f.rstrip() for f in filehandle.readlines()]
             
             filesPerJob = cfg["split"]
             sliced = [files_[i:i+filesPerJob] for i in range(0,len(files_),filesPerJob)]
