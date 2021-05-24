@@ -37,9 +37,9 @@ def ResolutionsOverModules(path=None):
             N = tree.GetEntries()
             for branch in tree.GetListOfBranches():
                 branchName = branch.GetName() 
-                #histo = tree.GetBranch(branchName)
+                histo = tree.GetBranch(branchName)
                 # FIXME Ask Pieter how to get the min and max bins from branch
-                tree.Draw("{}>>gethist(100,0.,10.)".format(branchName))
+                tree.Draw("{}>>gethist(60,{},{})".format(branchName, tree.GetMinimum(branchName), tree.GetMaximum(branchName)))
                 h = ROOT.gROOT.FindObject("gethist")
                 if not h:
                     print('Could not find key - {} - in file : {}'.format(branchName, smp))
@@ -60,13 +60,13 @@ def ResolutionsOverModules(path=None):
             
             if h.Integral() ==0. :
                 continue
-            h.Scale(1./h.Integral()) # normalized to 1 
+            #h.Scale(1./h.Integral()) # normalized to 1 
             h.SetLineStyle(1)
             h.SetLineColor(colors[i])
             h.SetLineWidth(2)
-            h.GetXaxis().SetTitle("{} [GeV]".format(var_ToPlot))
+            h.GetXaxis().SetTitle("{}".format(var_ToPlot))
             h.GetYaxis().SetTitle("Events")
-            h.SetMaximum(h.GetMaximum())
+            h.SetMaximum(h.GetMaximum()+1.1)
             h.SetMinimum(0.)
             legend.AddEntry(h,smpName + " ")
             h.Draw("H same")
