@@ -7,6 +7,8 @@ import datetime
 import argparse
 import collections
 import shutil
+import subprocess
+from os import path, listdir
 from CP3SlurmUtils.Configuration import Configuration
 from CP3SlurmUtils.SubmitWorker import SubmitWorker
 
@@ -48,6 +50,40 @@ def update_plotItFiles(data= None, era= None, rootf= None):
             } })
     return data
 
+def list_dir(dir_):
+    ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", dir_]
+    subprocess.check_call(ls_cmd, stdout=subprocess.PIPE)
+    subdir = subprocess.check_output(ls_cmd).split('\n')
+    subdir = filter(None, subdir)
+    return subdir
+
+def mapDir(prefix, directory):
+    thisDir = path.join(prefix, directory)
+    childMap = {}
+    contents = []
+    for child in list_dir(thisDir):
+        if path.join(thisDir, child).endswith('.root'): # path.isfile
+            contents.append(child)
+        else:
+            contents.append(mapDir(thisDir, child)) # path.isdir
+    childMap[directory] = contents
+    return childMap
+
+def makeFileList(prefix, dirMap):
+    fileList = []
+    for key in dirMap.keys():
+        for child in dirMap[key]:
+            if type(child) is str:
+                fileList.append(path.join(prefix, path.join(key, child)))
+            elif type(child) is dict:
+                for subdirFile in makeFileList(path.join(prefix, key), child):
+                    fileList.append(subdirFile)
+    return fileList
+
+def getFileList(dirName):
+    return makeFileList(dirName, mapDir(dirName, dirName))
+
+
 def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, isTest=False):
     data = collections.defaultdict(dict)
     
@@ -73,8 +109,14 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             except Exception as ex:
                 logger.exception("{} root files not found ** ".format( files))
             else:
-                #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/000/315/555/00000
-                files_ = glob.glob(os.path.join(cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
+                #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/*/*/*/*/*.root
+                ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", cfg["db"]]
+                try:
+                    subprocess.check_call(ls_cmd, stdout=subprocess.PIPE) 
+                    files_ = getFileList(subprocess.check_output(ls_cmd).replace('\n', ''))
+                    print( 'Files List : ', files_)
+                except subprocess.CalledProcessError:
+                    logger.error("Failed to run {0}".format(" ".join(ls_cmd)))
             
             filesPerJob = cfg["split"]
             sliced = [files_[i:i+filesPerJob] for i in range(0,len(files_),filesPerJob)]
@@ -83,7 +125,6 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
                 os.makedirs(outputdir_Persmp)
             inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%outputdir_Persmp] for idx,input in enumerate(sliced) ]
     
-    print (data ) 
     yamlfile = open(os.path.join(stageoutDir, "plotit_files.yml"), "w")
     yaml.dump(data, yamlfile)
     yamlfile.close()
@@ -130,18 +171,23 @@ def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTes
 if __name__ == '__main__':
     current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     parser = argparse.ArgumentParser(description='RUN CPE ANALYSER')
-    parser.add_argument('-o', '--outputdir', action='store', dest='outputdir', type=str, default=os.makedirs(current_time), help='** HistFactory output path')
+    parser.add_argument('-o', '--outputdir', action='store', dest='outputdir', type=str, default=None, help='** HistFactory output path')
     parser.add_argument('-y', '--yml', action='store', dest='yml', type=str, default=None, help='** Yml file that include your AlcaReco samples')
     parser.add_argument('--isTest', action='store_true', help='')
     parser.add_argument('--task', action='store', choices= ["skim", "hitresolution"], help='')
     options = parser.parse_args()
-   
+    
+    if options.outputdir is None:
+        outputdir = os.makedirs(current_time)
     if os.path.exists(options.outputdir):
         logger.warning("Output directory {} exists, previous results may be overwritten".format( options.outputdir))
+    
     if options.isTest:
         YmlFile ='../configs/alcareco_2018DExpress_localtest.yml'
     else:
         YmlFile = options.yml
+    
     print ('slurm Output dir :', options.outputdir)
     print ('yaml input files :', YmlFile)
+    
     ClusterParameterEstimator_4SLURM(yml=YmlFile, outputdir= options.outputdir, task=options.task.lower(), isTest = options.isTest) 
