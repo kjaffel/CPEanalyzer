@@ -113,11 +113,13 @@ class HitResol : public edm::EDAnalyzer {
   unsigned int iidd1            ;
   float        mypitch1         ;
   unsigned int clusterWidth     ;
+  unsigned int clusterCharge     ;
   float        expWidth         ;
   float        atEdge           ;
   float        simpleRes        ;
   unsigned int iidd2            ;
   unsigned int clusterWidth_2   ;
+  unsigned int clusterCharge_2   ;
   float        expWidth_2       ;
   float        atEdge_2         ;
   

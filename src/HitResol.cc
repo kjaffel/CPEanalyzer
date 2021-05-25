@@ -3,6 +3,7 @@
 // Class:            HitResol
 // Original Author:  DG
 //                   adapted from HitEff
+//                   modified by Khawla Jaffel 
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -128,11 +129,13 @@ void HitResol::beginJob(){
   reso->Branch("detID1",&iidd1,"detID1/I");
   reso->Branch("pitch1",&mypitch1,"pitch1/F");
   reso->Branch("clusterW1",&clusterWidth,"clusterW1/I");
+  reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
   reso->Branch("expectedW1",&expWidth,"expectedW1/F");
   reso->Branch("atEdge1",&atEdge,"atEdge1/F");
   reso->Branch("simpleRes",&simpleRes,"simpleRes/F");
   reso->Branch("detID2",&iidd2,"detID2/I");
   reso->Branch("clusterW2",&clusterWidth_2,"clusterW2/I");
+  reso->Branch("clusterCharge2",&clusterCharge_2,"clusterCharge2/I");
   reso->Branch("expectedW2",&expWidth_2,"expectedW2/F");
   reso->Branch("atEdge2",&atEdge_2,"atEdge2/F");
   reso->Branch("pairPath",&pairPath,"pairPath/F");
@@ -246,11 +249,12 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    iidd1            = 0;
    mypitch1         = 0;
    clusterWidth     = 0;
+   clusterCharge     = 0;
    expWidth         = 0;
    atEdge           = 0;
    simpleRes        = 0;
    iidd2            = 0;
-   clusterWidth_2   = 0;
+   clusterCharge_2   = 0;
    expWidth_2       = 0;
    atEdge_2         = 0;
    pairPath	    = 0;
@@ -298,7 +302,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
       ProbTrackChi2 = 0;
       numHits = 0;
 
-////    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
+//    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
 //    std::cout<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 //    std::cout<<"numhits "<< itraj->foundHits()  <<std::endl;
 
@@ -317,7 +321,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
       DetId id1 = hit1->geographicalId();
 //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) continue;
 //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) std::cout<<"AUTRE"<<std::endl;
-
 //      if (    hit1->isValid()  && mymom > MomentumCut_) std::cout<<"mymom: "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 
       if (    hit1->isValid()  &&
@@ -341,6 +344,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //             float myres = getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              clusterWidth = hit1d->cluster()->amplitudes().size();
+             clusterCharge = hit1d->cluster()->charge();
              uint16_t firstStrip = hit1d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit1d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
@@ -353,6 +357,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //             float myres = getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
              clusterWidth = hit2d->cluster()->amplitudes().size();
+             clusterCharge = hit2d->cluster()->charge();
              uint16_t firstStrip = hit2d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit2d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
@@ -413,6 +418,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           if (hit1d_2) {
              getSimHitRes(det_2,trackDirection_2,*hit1d_2,expWidth_2,&mypitch_2,drift_2);
              clusterWidth_2 = hit1d_2->cluster()->amplitudes().size();
+             clusterCharge_2 = hit1d_2->cluster()->charge();
              uint16_t firstStrip_2 = hit1d_2->cluster()->firstStrip();
              uint16_t lastStrip_2 = firstStrip_2 + (hit1d_2->cluster()->amplitudes()).size() -1;
              atEdge_2 = (firstStrip_2 == 0 || lastStrip_2 == (Nstrips_2-1) );
@@ -423,6 +429,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //             float myres_2 = getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch_2,drift_2);
              getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch_2,drift_2);
              clusterWidth_2 = hit2d_2->cluster()->amplitudes().size();
+             clusterCharge_2 = hit2d_2->cluster()->charge();
              uint16_t firstStrip_2 = hit2d_2->cluster()->firstStrip();
              uint16_t lastStrip_2 = firstStrip_2 + (hit2d_2->cluster()->amplitudes()).size() -1;
              atEdge_2 = (firstStrip_2 == 0 || lastStrip_2 == (Nstrips_2-1) );
@@ -444,10 +451,10 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //   std::cout<<"  "<<std::endl;
 //   std::cout<<"  "<<std::endl;
 //
-// //   std::cout<<" momentum "<< track_momentum <<std::endl;
-// //   std::cout<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
-// //   std::cout<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
-// //   std::cout<<" track_eta      "<<         track_eta<<std::endl;
+//   std::cout<<" momentum "<< track_momentum <<std::endl;
+//   std::cout<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
+//   std::cout<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
+//   std::cout<<" track_eta      "<<         track_eta<<std::endl;
 //   std::cout<<" momentum       "<<         mymom<<std::endl;
 //   std::cout<<" numHits         "<<        numHits<<std::endl;
 //   std::cout<<" trackChi2       "<<        ProbTrackChi2<<std::endl;
@@ -486,23 +493,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
       } // itm
     } // it
 
-
-
-
-
-
-
-
-
 ////// Endof Plugin of Nico code:
 
-
 }
-
-
-
-
-
 
 void HitResol::endJob(){
 //   traj->GetDirectory()->cd();
