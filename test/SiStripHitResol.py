@@ -6,9 +6,6 @@ process.load("Configuration/StandardSequences/MagneticField_cff")
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')  
-
 options = VarParsing.VarParsing('analysis')
 options.parseArguments()
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
@@ -25,12 +22,20 @@ outputFile=options.outputFile
 InputTagName = "ALCARECO"+outputFile.split('/')[-2].split('_')[0]
 print("InputTagName:", InputTagName )
 fileNames=cms.untracked.vstring(options.inputFiles)
+
+from Configuration.AlCa.GlobalTag import GlobalTag
+# not the best way to do it # FIXME 
+# edmProvDump <filename> | grep -i globaltag
+if "RelVal" in outputFile.split('/')[-2]: # mc samples
+    process.GlobalTag = GlobalTag(process.GlobalTag, '112X_mcRun3_2021_realistic_v13', '')  
+else: # data
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')  
 ###########################################################
 process.source = cms.Source("PoolSource", fileNames=fileNames)
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-#process.load("RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi")
+process.load("RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi")
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 
 process.refitTracks = process.TrackRefitterP5.clone(src=cms.InputTag(InputTagName))

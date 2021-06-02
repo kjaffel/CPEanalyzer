@@ -272,7 +272,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto HistoName_TrackDX = "TrackDX_" + region; 
   auto HistoName_TrackDXE = "TrackDXE_" + region;
 
-  auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 40, -0.5, 0.5}, HistoName_DoubleDiff); 
+  auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.025, 0.025}, HistoName_DoubleDiff); 
   auto h_hitDX = dataframe_filtered.Define(HistoName_HitDX, HitDXString).Histo1D(HistoName_HitDX);
   auto h_trackDX = dataframe_filtered.Define(HistoName_TrackDX, TrackDXString).Histo1D(HistoName_TrackDX);
   auto h_trackDXE = dataframe_filtered.Define(HistoName_TrackDXE, TrackDXEString).Histo1D(HistoName_TrackDXE);
@@ -307,7 +307,6 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   
   //Calculating the hit resolution;
   auto numerator = sigma2_MeasMinusPred - sigma2_PredError;
-
   auto HitResolution = sqrt( numerator/2 );
   HitResolutionVector.push_back(HitResolution);
 
@@ -354,6 +353,7 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
       std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
       string cmd = "mv ";
       cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+      std::cout << "cmd :" << cmd << std::endl; 
       // Convert string to const char * as system requires
       // parameter of type const char *
       const char *command = cmd.c_str();
