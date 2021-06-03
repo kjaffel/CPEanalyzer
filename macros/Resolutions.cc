@@ -11,6 +11,7 @@ vector<float> DoubleDifferenceVector;
 vector<float> HitDXVector;
 vector<float> TrackDXVector;
 vector<float> TrackDXEVector;
+vector<float> CPEEstimatedVector;
 
 std::string HitResoFileName;
 std::string GaussianFitsFileName;
@@ -22,7 +23,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   std::string HitDXString;
   std::string TrackDXString;
   std::string TrackDXEString;
-
+  std::string CPEEstimatedString;
   switch(UL){
 	case 0: switch(Unit_Int){
         		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_ALCARECO.root"; 
@@ -32,6 +33,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 HitDXString = "hitDX_OverPitch";
                                 TrackDXString = "trackDX_OverPitch";
                                 TrackDXEString = "trackDXE_OverPitch";
+                                CPEEstimatedString = "StripErrorSquared1_OverPitch";
 				break;
 
         		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO.root"; 
@@ -41,6 +43,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 				HitDXString = "hitDX";
 				TrackDXString = "trackDX";
 				TrackDXEString = "trackDXE"; 
+                CPEEstimatedString = "StripErrorSquared1";
 				break;
 
         		default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
@@ -56,6 +59,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 HitDXString = "hitDX_OverPitch";
                                 TrackDXString = "trackDX_OverPitch";
                                 TrackDXEString = "trackDXE_OverPitch";
+                                CPEEstimatedString = "StripErrorSquared1_OverPitch";
                                 break;
 
                         case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO_UL.root"; 
@@ -65,6 +69,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 HitDXString = "hitDX";
                                 TrackDXString = "trackDX";
                                 TrackDXEString = "trackDXE"; 
+                                CPEEstimatedString = "StripErrorSquared1";
                                 break;
 
                         default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
@@ -240,6 +245,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto dataframe = d.Define("hitDX_OverPitch", Pitch_Function, {"pitch1", "hitDX"})
 	 	    .Define("trackDX_OverPitch", Pitch_Function, {"pitch1", "trackDX"})
 		    .Define("trackDXE_OverPitch", Pitch_Function, {"pitch1", "trackDXE"})
+		    .Define("StripErrorSquared1_OverPitch", Pitch_Function, {"pitch1", "StripErrorSquared1"})
 		    .Filter(SubDet_Function, {"detID1", "detID2"}, "Subdetector filter");
 
   //Implementing selection criteria that were not implemented in HitResol.cc
@@ -271,11 +277,13 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto HistoName_HitDX = "HitDX_" + region;
   auto HistoName_TrackDX = "TrackDX_" + region; 
   auto HistoName_TrackDXE = "TrackDXE_" + region;
+  auto HistoName_CPEEstimated = "CPEEstimated_" + region;
 
   auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.025, 0.025}, HistoName_DoubleDiff); 
   auto h_hitDX = dataframe_filtered.Define(HistoName_HitDX, HitDXString).Histo1D(HistoName_HitDX);
   auto h_trackDX = dataframe_filtered.Define(HistoName_TrackDX, TrackDXString).Histo1D(HistoName_TrackDX);
   auto h_trackDXE = dataframe_filtered.Define(HistoName_TrackDXE, TrackDXEString).Histo1D(HistoName_TrackDXE);
+  auto h_cpeEstimated = dataframe_filtered.Define(HistoName_CPEEstimated, CPEEstimatedString).Histo1D(HistoName_CPEEstimated);
 
   //Applying gaussian fits, taking the resolutions and squaring them
   h_DoubleDifference->Fit("gaus");
@@ -284,16 +292,19 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto hitDX_StdDev = h_hitDX->GetStdDev();
   auto trackDX_StdDev = h_trackDX->GetStdDev();
   auto trackDXE_Mean = h_trackDXE->GetMean();
-
+  auto cpeEstimated_squared = h_cpeEstimated->GetMean();
+  
   auto sigma2_MeasMinusPred = pow(double_diff_StdDev, 2);
   auto sigma2_Meas = pow(hitDX_StdDev, 2);
   auto sigma2_Pred = pow(trackDX_StdDev, 2); 
   auto sigma2_PredError = pow(trackDXE_Mean, 2);
+  auto sigma2_estimated = sqrt(cpeEstimated_squared);
 
   DoubleDifferenceVector.push_back(sigma2_MeasMinusPred);
   HitDXVector.push_back(sigma2_Meas);
   TrackDXVector.push_back(sigma2_Pred);
   TrackDXEVector.push_back(sigma2_PredError);
+  CPEEstimatedVector.push_back(sigma2_estimated);
 
   //Saving the histograms with gaussian fits applied to an output root file
   TFile * output = new TFile(GaussianFitsFileName.c_str(), "UPDATE");
@@ -302,6 +313,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   h_hitDX->Write();
   h_trackDX->Write();
   h_trackDXE->Write();
+  h_cpeEstimated->Write();
 
   output->Close();
   
@@ -312,6 +324,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
   //Printing the resolution 
   std::cout << "The hit resolution for tracker region " << region << " is: " << HitResolution << std::endl;
+  std::cout << "CPE -estimated for tracker region " << region << " is: " << sigma2_estimated << std::endl;
   //std::cout << '\n' << std::endl;
 
   //Cut flow report

@@ -139,7 +139,8 @@ class HitResol : public edm::EDAnalyzer {
   unsigned int clusterWidth     ;
   unsigned int clusterCharge    ;
   float        expWidth         ;
-  float        StripErrorSquared_1  ;
+  float        StripErrorSquared1  ;
+  float        StripErrorSquared2  ;
   float        atEdge           ;
   float        simpleRes        ;
   unsigned int iidd2            ;
@@ -167,6 +168,7 @@ class HitResol : public edm::EDAnalyzer {
   float        N1;
   float        N2;
   float        uerr2;
+  float        uerr2_2;
 };
 
 

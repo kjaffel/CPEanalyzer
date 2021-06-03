@@ -166,6 +166,7 @@ void HitResol::beginJob(){
   reso->Branch("clusterW2",&clusterWidth_2,"clusterW2/I");
   reso->Branch("clusterCharge2",&clusterCharge_2,"clusterCharge2/I");
   reso->Branch("expectedW2",&expWidth_2,"expectedW2/F");
+  reso->Branch("StripErrorSquared2",&uerr2_2,"StripErrorSquared2/F");
   reso->Branch("atEdge2",&atEdge_2,"atEdge2/F");
   reso->Branch("pairPath",&pairPath,"pairPath/F");
   reso->Branch("hitDX",&hitDX,"hitDX/F");
@@ -278,7 +279,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    clusterWidth     = 0;
    clusterCharge    = 0;
    expWidth         = 0;
-   StripErrorSquared_1 = 0;
+   StripErrorSquared1 = 0;
+   StripErrorSquared2 = 0;
    atEdge           = 0;
    simpleRes        = 0;
    iidd2            = 0;
@@ -300,7 +302,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    pairsOnly        = 0;
    N1 = 0;
    N2 = 0;
-   uerr2 = 0;
+   uerr2   = 0;
+   uerr2_2 = 0;
   // Tracking
   const   reco::TrackCollection *tracksCKF=trackCollectionCKF.product();
 
@@ -331,7 +334,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
       ProbTrackChi2 = 0;
       numHits = 0;
-      uerr2 = 0;
+      uerr2   = 0;
+      uerr2_2 = 0;
 //    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
 //    std::cout<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 //    std::cout<<"numhits "<< itraj->foundHits()  <<std::endl;
@@ -417,13 +421,13 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
              switch (m_algo) {
                 case Algo::chargeCK: {
                     auto dQdx = siStripClusterTools::chargePerCM(cluster, ltp, p.invThickness);
-                    uerr2 = dQdx > maxChgOneMIP ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
+                    uerr2_2 = dQdx > maxChgOneMIP ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
                     } break;
                 case Algo::legacy:
-                    uerr2 = legacyStripErrorSquared(N2, afp);
+                    uerr2_2 = legacyStripErrorSquared(N2, afp);
                     break;
                 case Algo::mergeCK:
-                    uerr2 = cluster.isMerged() ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
+                    uerr2_2 = cluster.isMerged() ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
                     break;
             }
           }
