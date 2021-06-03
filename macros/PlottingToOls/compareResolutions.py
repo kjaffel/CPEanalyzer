@@ -12,7 +12,7 @@ ROOT.gStyle.SetOptStat(0)
 def ResolutionsOverModules(path=None):
     colors = [ROOT.kViolet, ROOT.kBlack, ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kCyan, ROOT.kViolet, ROOT.kRed+2, ROOT.kYellow, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kSpring, ROOT.kTeal]
     tree_tracks = ['track_momentum', 'track_eta', 'track_trackChi2']
-    tree_hitpair = ['momentum','numHits', 'trackChi2', 'detID1', 'pitch1', 'clusterW1', 'expectedW1', 'atEdge1', 'simpleRes', 'detID2', 'clusterW2', 'expectedW2', 'atEdge2', 'pairPath', 'hitDX', 'trackDX', 'trackDXE', 'trackParamX', 'trackParamY', 'trackParamDXDZ', 'trackParamDYDZ', 'trackParamXE', 'trackParamYE', 'trackParamDXDZE', 'trackParamDYDZE', 'pairsOnly']
+    #tree_hitpair = {'momentum':100.,'numHits':, 'trackChi2':, 'detID1':, 'pitch1':, 'clusterW1':, 'expectedW1':, 'atEdge1':, 'simpleRes':, 'detID2':, 'clusterW2':, 'expectedW2':, 'atEdge2':, 'pairPath':, 'hitDX':, 'trackDX':, 'trackDXE':, 'trackParamX':, 'trackParamY':, 'trackParamDXDZ':, 'trackParamDYDZ':, 'trackParamXE':, 'trackParamYE':, 'trackParamDXDZE':, 'trackParamDYDZE':, 'pairsOnly':}
     
     analysisCfgs =os.path.join(os.path.dirname(os.path.abspath(__file__)), path, "analysis.yml")
     with open(analysisCfgs,"r") as file:
@@ -35,11 +35,14 @@ def ResolutionsOverModules(path=None):
             print( obj_key.GetName())
             tree = file.Get("{}".format(obj.GetName()))
             N = tree.GetEntries()
+            print( 'N events ', N )
             for branch in tree.GetListOfBranches():
                 branchName = branch.GetName() 
                 histo = tree.GetBranch(branchName)
-                # FIXME Ask Pieter how to get the min and max bins from branch
-                tree.Draw("{}>>gethist(60,{},{})".format(branchName, tree.GetMinimum(branchName), tree.GetMaximum(branchName)))
+
+                #tree.Draw("{}>>gethist(60,{},{})".format(branchName, tree.GetMinimum(branchName), tree.GetMaximum(branchName)))
+                tree.Draw("{}>>gethist(60,{},{})".format(branchName, tree.GetMinimum(branchName), 1.))
+                
                 h = ROOT.gROOT.FindObject("gethist")
                 if not h:
                     print('Could not find key - {} - in file : {}'.format(branchName, smp))
@@ -72,7 +75,7 @@ def ResolutionsOverModules(path=None):
             h.Draw("H same")
             
         legend.Draw()
-        C.Print("{}/{}.pdf".format(plots_dir, var_ToPlot))
+        C.Print("{}/{}.png".format(plots_dir, var_ToPlot))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='', formatter_class=argparse.RawTextHelpFormatter)
