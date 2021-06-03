@@ -45,11 +45,19 @@
 #include "Riostream.h"
 #include "TRandom2.h"
 
+#include "RecoLocalTracker/SiStripRecHitConverter/interface/StripCPE.h"
+
 class TrackerTopology;
 
 class HitResol : public edm::EDAnalyzer {
  public:  
   explicit HitResol(const edm::ParameterSet& conf);
+                    //const MagneticField& mag,
+                    //const TrackerGeometry& geom,
+                    //const SiStripLorentzAngle& lorentz,
+                    //const SiStripBackPlaneCorrection& backPlaneCorrection,
+                    //const SiStripConfObject& confObj,
+                    //const SiStripLatency& latency);
   double checkConsistency(const StripClusterParameterEstimator::LocalValues& parameters, double xx, double xerr);
   bool isDoubleSided(unsigned int iidd, const TrackerTopology* tTopo) const;
   bool check2DPartner(unsigned int iidd, const std::vector<TrajectoryMeasurement>& traj);
@@ -60,6 +68,8 @@ class HitResol : public edm::EDAnalyzer {
   double getSimpleRes(const TrajectoryMeasurement* traj1);
   bool getPairParameters(const MagneticField* magField_, AnalyticalPropagator& propagator,const TrajectoryMeasurement* traj1, const TrajectoryMeasurement* traj2, float & pairPath, float & hitDX, float & trackDX,  float & trackDXE, float & trackParamX, float &trackParamY , float & trackParamDXDZ, float &trackParamDYDZ , float & trackParamXE, float &trackParamYE, float & trackParamDXDZE, float &trackParamDYDZE);
   typedef std::vector<Trajectory> TrajectoryCollection;
+  float stripErrorSquared(const unsigned N, const float uProj, const SiStripDetId::SubDetector loc) const;
+  float legacyStripErrorSquared(const unsigned N, const float uProj) const;
 
  private:
   void beginJob() override;
@@ -90,6 +100,20 @@ class HitResol : public edm::EDAnalyzer {
   const edm::EDGetTokenT<DetIdCollection> digis_token_;
   const edm::EDGetTokenT<MeasurementTrackerEvent> trackerEvent_token_;
 
+  //Error parameterization, low cluster width function
+  float mLC_P[3];
+  float mHC_P[4][2];
+  //High cluster width is broken down by sub-det
+  std::map<SiStripDetId::SubDetector, float> mHC_P0;
+  std::map<SiStripDetId::SubDetector, float> mHC_P1;
+  //Set to true if we are using the old error parameterization
+  const bool useLegacyError;
+  //Clusters with charge/path > this cut will use old error parameterization
+  // (overridden by useLegacyError; negative value disables the cut)
+  const float maxChgOneMIP;
+  enum class Algo { legacy, mergeCK, chargeCK };
+  Algo m_algo;
+  
   edm::ParameterSet conf_;
   
   TTree* reso;
@@ -113,16 +137,16 @@ class HitResol : public edm::EDAnalyzer {
   unsigned int iidd1            ;
   float        mypitch1         ;
   unsigned int clusterWidth     ;
-  unsigned int clusterCharge     ;
+  unsigned int clusterCharge    ;
   float        expWidth         ;
+  float        StripErrorSquared_1  ;
   float        atEdge           ;
   float        simpleRes        ;
   unsigned int iidd2            ;
   unsigned int clusterWidth_2   ;
-  unsigned int clusterCharge_2   ;
+  unsigned int clusterCharge_2  ;
   float        expWidth_2       ;
   float        atEdge_2         ;
-  
   float        pairPath 	;
   float        hitDX		;
   float        trackDX  	;
@@ -138,8 +162,11 @@ class HitResol : public edm::EDAnalyzer {
   unsigned int pairsOnly        ;
   float        track_momentum   ;
   float        track_eta        ;
+  float        track_phi        ;
   float        track_trackChi2  ;
-
+  float        N1;
+  float        N2;
+  float        uerr2;
 };
 
 

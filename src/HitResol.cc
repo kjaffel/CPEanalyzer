@@ -74,29 +74,44 @@
 #include "TrackingTools/AnalyticalJacobians/interface/JacobianLocalToCurvilinear.h"
 #include "TrackingTools/AnalyticalJacobians/interface/JacobianCurvilinearToLocal.h"
 #include "TrackingTools/AnalyticalJacobians/interface/AnalyticalCurvilinearJacobian.h"
+
+
+#include "RecoLocalTracker/SiStripRecHitConverter/interface/StripCPEfromTrackAngle.h"
+#include "Geometry/CommonTopologies/interface/StripTopology.h"
+#include "DataFormats/SiStripCluster/interface/SiStripClusterTools.h"
+//#include "RecoLocalTracker/SiStripRecHitConverter/interface/StripCPE.h"
+#include "vdt/vdtMath.h"
+
 //
 // constructors and destructor
 //
 
 using namespace std;
-HitResol::HitResol(const edm::ParameterSet& conf) :
+HitResol::HitResol(const edm::ParameterSet& conf): 
+                   //const MagneticField& mag,
+                   //const TrackerGeometry& geom,
+                   //const SiStripLorentzAngle& lorentz,
+                   //const SiStripBackPlaneCorrection& backPlaneCorrection,
+                   //const SiStripConfObject& confObj,
+                   //const SiStripLatency& latency):
+  //StripCPE(conf, mag, geom, lorentz, backPlaneCorrection, confObj, latency),
   scalerToken_( consumes< LumiScalersCollection >(conf.getParameter<edm::InputTag>("lumiScalers")) ),
   commonModeToken_( mayConsume< edm::DetSetVector<SiStripRawDigi> >(conf.getParameter<edm::InputTag>("commonMode")) ),
   combinatorialTracks_token_( consumes< reco::TrackCollection >(conf.getParameter<edm::InputTag>("combinatorialTracks")) ),
   trajectories_token_( consumes< std::vector<Trajectory> >(conf.getParameter<edm::InputTag>("trajectories")) ),
   trajTrackAsso_token_( consumes< TrajTrackAssociationCollection >(conf.getParameter<edm::InputTag>("trajectories")) ),
-//ModifDG
-      tjToken_( consumes<  std::vector<Trajectory  > >( conf.getParameter<edm::InputTag>("trajectories") )),
-//   tkToken_( consumes< reco::TrackCollection  >( conf.getParameter<edm::InputTag>("tracks") )),
-//EndModifDG
+  tjToken_( consumes<  std::vector<Trajectory  > >( conf.getParameter<edm::InputTag>("trajectories") )),
+  //tkToken_( consumes< reco::TrackCollection  >( conf.getParameter<edm::InputTag>("tracks") )),
   clusters_token_( consumes< edmNew::DetSetVector<SiStripCluster> >(conf.getParameter<edm::InputTag>("siStripClusters")) ),
   digis_token_( consumes< DetIdCollection >(conf.getParameter<edm::InputTag>("siStripDigis")) ),
-//ModifDG
-//   tracks_token_( consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("Tracks") )),
-//EndModifDG
+  //tracks_token_( consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("Tracks") )),
   trackerEvent_token_( consumes< MeasurementTrackerEvent>(conf.getParameter<edm::InputTag>("trackerEvent")) ),
-  conf_(conf)
-{
+  
+  useLegacyError(conf.existsAs<bool>("useLegacyError") ? conf.getParameter<bool>("useLegacyError") : true),
+  maxChgOneMIP(conf.existsAs<float>("maxChgOneMIP") ? conf.getParameter<double>("maxChgOneMIP") : -6000.),
+  m_algo(useLegacyError ? Algo::legacy : (maxChgOneMIP < 0 ? Algo::mergeCK : Algo::chargeCK)),
+  
+  conf_(conf){ 
   compSettings=conf_.getUntrackedParameter<int>("CompressionSettings",-1);
   layers =conf_.getParameter<int>("Layer");
   DEBUG = conf_.getParameter<bool>("Debug");
@@ -109,6 +124,19 @@ HitResol::HitResol(const edm::ParameterSet& conf) :
   useAllHitsFromTracksWithMissingHits_ = conf_.getUntrackedParameter<bool>("useAllHitsFromTracksWithMissingHits", false);
   MomentumCut_ = conf_.getUntrackedParameter<double>("MomentumCut", 3.);
   UsePairsOnly_ = conf.getUntrackedParameter<unsigned int>("UsePairsOnly",1);
+  
+  mLC_P[0] = conf.existsAs<double>("mLC_P0") ? conf.getParameter<double>("mLC_P0") : -.326;
+  mLC_P[1] = conf.existsAs<double>("mLC_P1") ? conf.getParameter<double>("mLC_P1") : .618;
+  mLC_P[2] = conf.existsAs<double>("mLC_P2") ? conf.getParameter<double>("mLC_P2") : .300;
+
+  mHC_P[SiStripDetId::TIB - 3][0] = conf.existsAs<double>("mTIB_P0") ? conf.getParameter<double>("mTIB_P0") : -.742;
+  mHC_P[SiStripDetId::TIB - 3][1] = conf.existsAs<double>("mTIB_P1") ? conf.getParameter<double>("mTIB_P1") : .202;
+  mHC_P[SiStripDetId::TID - 3][0] = conf.existsAs<double>("mTID_P0") ? conf.getParameter<double>("mTID_P0") : -1.026;
+  mHC_P[SiStripDetId::TID - 3][1] = conf.existsAs<double>("mTID_P1") ? conf.getParameter<double>("mTID_P1") : .253;
+  mHC_P[SiStripDetId::TOB - 3][0] = conf.existsAs<double>("mTOB_P0") ? conf.getParameter<double>("mTOB_P0") : -1.427;
+  mHC_P[SiStripDetId::TOB - 3][1] = conf.existsAs<double>("mTOB_P1") ? conf.getParameter<double>("mTOB_P1") : .433;
+  mHC_P[SiStripDetId::TEC - 3][0] = conf.existsAs<double>("mTEC_P0") ? conf.getParameter<double>("mTEC_P0") : -1.885;
+  mHC_P[SiStripDetId::TEC - 3][1] = conf.existsAs<double>("mTEC_P1") ? conf.getParameter<double>("mTEC_P1") : .471;
 }
 
 // Virtual destructor needed.
@@ -131,6 +159,7 @@ void HitResol::beginJob(){
   reso->Branch("clusterW1",&clusterWidth,"clusterW1/I");
   reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
   reso->Branch("expectedW1",&expWidth,"expectedW1/F");
+  reso->Branch("StripErrorSquared1",&uerr2,"StripErrorSquared1/F");
   reso->Branch("atEdge1",&atEdge,"atEdge1/F");
   reso->Branch("simpleRes",&simpleRes,"simpleRes/F");
   reso->Branch("detID2",&iidd2,"detID2/I");
@@ -154,6 +183,7 @@ void HitResol::beginJob(){
   treso = fs->make<TTree>("treso","tree tracks  for resolution studies");
   treso->Branch("track_momentum",&track_momentum,"track_momentum/F");
   treso->Branch("track_eta",&track_eta,"track_eta/F");
+  treso->Branch("track_phi",&track_phi,"track_phi/F");
   treso->Branch("track_trackChi2",&track_trackChi2,"track_trackChi2/F");
 
   events = 0;
@@ -168,7 +198,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
   const TrackerTopology* const tTopo = tTopoHandle.product();
 
   //  bool DEBUG = false;
-
   LogDebug("SiStripHitResolution:HitResol")  << "beginning analyze from HitResol" << endl;
 
   using namespace edm;
@@ -238,10 +267,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
   events++;
 
-//   // *************** SiStripCluster Collection
+//   // *************** SiStripCluster Collection ***************
 //   const edmNew::DetSetVector<SiStripCluster>& input = *theClusters;
-
-
 // List of variables for SiStripHitResolution ntuple
    mymom            = 0;
    numHits          = 0;
@@ -249,12 +276,13 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    iidd1            = 0;
    mypitch1         = 0;
    clusterWidth     = 0;
-   clusterCharge     = 0;
+   clusterCharge    = 0;
    expWidth         = 0;
+   StripErrorSquared_1 = 0;
    atEdge           = 0;
    simpleRes        = 0;
    iidd2            = 0;
-   clusterCharge_2   = 0;
+   clusterCharge_2  = 0;
    expWidth_2       = 0;
    atEdge_2         = 0;
    pairPath	    = 0;
@@ -270,17 +298,19 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    trackParamDXDZE  = 0;
    trackParamDYDZE  = 0;
    pairsOnly        = 0;
-
+   N1 = 0;
+   N2 = 0;
+   uerr2 = 0;
   // Tracking
   const   reco::TrackCollection *tracksCKF=trackCollectionCKF.product();
 
 ////// Plugin of Nico code:
-
   std::cout<<"Starting analysis, nrun nevent, tracksCKF->size(): "<<run_nr<<" "<<ev_nr<<" "<<  tracksCKF->size() <<std::endl;
 
   for(unsigned int iT = 0; iT < tracksCKF->size(); ++iT){
     track_momentum = tracksCKF->at(iT).pt();
     track_eta = tracksCKF->at(iT).eta();
+    track_phi = tracksCKF->at(iT).phi();
     track_trackChi2   = ChiSquaredProbability((double)( tracksCKF->at(iT).chi2() ),(double)( tracksCKF->at(iT).ndof() ));
     treso->Fill();
   }
@@ -301,7 +331,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
       ProbTrackChi2 = 0;
       numHits = 0;
-
+      uerr2 = 0;
 //    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
 //    std::cout<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 //    std::cout<<"numhits "<< itraj->foundHits()  <<std::endl;
@@ -310,12 +340,10 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
       ProbTrackChi2 = ChiSquaredProbability((double)( traj.chiSquared() ),(double)( traj.ndof(false) ));
 
       mymom =  itm->updatedState().globalMomentum().perp();
-
       std::cout<<"mymom "<<mymom<<std::endl;
 
-//      double  MomentumCut_ = 3. ;
-
-      //Now for the first hit
+//    double  MomentumCut_ = 3. ;
+      // Now for the first hit
       TrajectoryStateOnSurface mytsos = itm->updatedState();
       const auto hit1 = itm->recHit();
       DetId id1 = hit1->geographicalId();
@@ -339,31 +367,69 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           LocalVector drift = stripcpe.driftDirection(stripdet);
 
           const auto hit1d = dynamic_cast<const SiStripRecHit1D*>(myhit);
-
+          
+          LocalTrajectoryParameters ltp = mytsos.localParameters();
+          auto const& par = dynamic_cast<const StripCPE*>(parameterestimator.product())->getAlgoParam(*det, ltp);
+          auto const& p = par.p;
+          auto loc = par.loc;
+          auto corr = par.corr;
+          auto afp = par.afullProjection;
+         
           if (hit1d) {
+             const auto& cluster = *(hit1d->cluster());
 //             float myres = getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              clusterWidth = hit1d->cluster()->amplitudes().size();
              clusterCharge = hit1d->cluster()->charge();
+             N1 = hit1d->cluster()->amplitudes().size();
              uint16_t firstStrip = hit1d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit1d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
+          
+             switch (m_algo) {
+                case Algo::chargeCK: {
+                    auto dQdx = siStripClusterTools::chargePerCM(cluster, ltp, p.invThickness);
+                    uerr2 = dQdx > maxChgOneMIP ? legacyStripErrorSquared(N1, afp) : stripErrorSquared(N1, afp, loc);
+                } break;
+                case Algo::legacy:
+                    uerr2 = legacyStripErrorSquared(N1, afp);
+                    break;
+                case Algo::mergeCK:
+                    uerr2 = cluster.isMerged() ? legacyStripErrorSquared(N1, afp) : stripErrorSquared(N1, afp, loc);
+                    break;
+             }
           }
 
 
           const auto hit2d = dynamic_cast<const SiStripRecHit2D*>(myhit);
 
           if (hit2d) {
+             const auto& cluster = *(hit2d->cluster());
 //             float myres = getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
              clusterWidth = hit2d->cluster()->amplitudes().size();
              clusterCharge = hit2d->cluster()->charge();
+             N2 = hit2d->cluster()->amplitudes().size();
              uint16_t firstStrip = hit2d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit2d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
+          
+             switch (m_algo) {
+                case Algo::chargeCK: {
+                    auto dQdx = siStripClusterTools::chargePerCM(cluster, ltp, p.invThickness);
+                    uerr2 = dQdx > maxChgOneMIP ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
+                    } break;
+                case Algo::legacy:
+                    uerr2 = legacyStripErrorSquared(N2, afp);
+                    break;
+                case Algo::mergeCK:
+                    uerr2 = cluster.isMerged() ? legacyStripErrorSquared(N2, afp) : stripErrorSquared(N2, afp, loc);
+                    break;
+            }
           }
 
-          simpleRes = getSimpleRes(&(*itm)); // simple resolution by using the track re-fit forward and backward predicted state
+          // simple resolution by using the track re-fit forward and backward predicted state
+          simpleRes = getSimpleRes(&(*itm)); 
 
           // Now to see if there is a match - pair method - hit in overlapping sensors
           vector < TrajectoryMeasurement >::const_iterator itTraj2 =  TMeas.end(); // last hit along the fitted track
@@ -435,9 +501,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
              atEdge_2 = (firstStrip_2 == 0 || lastStrip_2 == (Nstrips_2-1) );
           }
 
-
 //        if(pairsOnly && (pitch != pitch2) ) fill = false;
-
 
 	   // Make AnalyticalPropagator to use in getPairParameters
 	   AnalyticalPropagator mypropagator(magField_,anyDirection);
@@ -451,37 +515,37 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //   std::cout<<"  "<<std::endl;
 //   std::cout<<"  "<<std::endl;
 //
-//   std::cout<<" momentum "<< track_momentum <<std::endl;
-//   std::cout<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
-//   std::cout<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
-//   std::cout<<" track_eta      "<<         track_eta<<std::endl;
-//   std::cout<<" momentum       "<<         mymom<<std::endl;
-//   std::cout<<" numHits         "<<        numHits<<std::endl;
-//   std::cout<<" trackChi2       "<<        ProbTrackChi2<<std::endl;
-//   std::cout<<" detID1         "<<         iidd1<<std::endl;
-//   std::cout<<" pitch1          "<<        mypitch1<<std::endl;
-//   std::cout<<" clusterW1        "<<       clusterWidth<<std::endl;
-//   std::cout<<" expectedW1       "<<       expWidth<<std::endl;
-//   std::cout<<" atEdge1          "<<       atEdge<<std::endl;
-//   std::cout<<" simpleRes        "<<       simpleRes<<std::endl;
-//   std::cout<<" detID2           "<<       iidd2<<std::endl;
-//   std::cout<<" clusterW2        "<<       clusterWidth_2<<std::endl;
-//   std::cout<<" expectedW2       "<<       expWidth_2<<std::endl;
-//   std::cout<<" atEdge2          "<<       atEdge_2<<std::endl;
+//   std::cout<<" momentum         "<<   track_momentum <<std::endl;
+//   std::cout<<" track_trackChi2  "<<   track_trackChi2<<std::endl;
+//   std::cout<<" track_trackChi2_2"<<   track_trackChi2_2<<std::endl;
+//   std::cout<<" track_eta        "<<   track_eta<<std::endl;
+//   std::cout<<" momentum         "<<   mymom<<std::endl;
+//   std::cout<<" numHits          "<<   numHits<<std::endl;
+//   std::cout<<" trackChi2        "<<   ProbTrackChi2<<std::endl;
+//   std::cout<<" detID1           "<<   iidd1<<std::endl;
+//   std::cout<<" pitch1           "<<   mypitch1<<std::endl;
+//   std::cout<<" clusterW1        "<<   clusterWidth<<std::endl;
+//   std::cout<<" expectedW1       "<<   expWidth<<std::endl;
+//   std::cout<<" atEdge1          "<<   atEdge<<std::endl;
+//   std::cout<<" simpleRes        "<<   simpleRes<<std::endl;
+//   std::cout<<" detID2           "<<   iidd2<<std::endl;
+//   std::cout<<" clusterW2        "<<   clusterWidth_2<<std::endl;
+//   std::cout<<" expectedW2       "<<   expWidth_2<<std::endl;
+//   std::cout<<" atEdge2          "<<   atEdge_2<<std::endl;
 //
-//   std::cout<<" pairPath         "<<       pairPath<<std::endl;
-//   std::cout<<" hitDX            "<<       hitDX<<std::endl;
-//   std::cout<<" trackDX          "<<       trackDX<<std::endl;
-//   std::cout<<" trackDXE         "<<       trackDXE<<std::endl;
+//   std::cout<<" pairPath         "<<   pairPath<<std::endl;
+//   std::cout<<" hitDX            "<<   hitDX<<std::endl;
+//   std::cout<<" trackDX          "<<   trackDX<<std::endl;
+//   std::cout<<" trackDXE         "<<   trackDXE<<std::endl;
 //
-//   std::cout<<" trackParamX	  "<<        trackParamX<<std::endl;
-//   std::cout<<" trackParamY	  "<<        trackParamY <<std::endl;
-//   std::cout<<" trackParamDXDZ     "<<     trackParamDXDZ<<std::endl;
-//   std::cout<<" trackParamDYDZ     "<<     trackParamDYDZ<<std::endl;
-//   std::cout<<" trackParamXE        "<<    trackParamXE<<std::endl;
-//   std::cout<<" trackParamYE        "<<    trackParamYE<<std::endl;
-//   std::cout<<" trackParamDXDZE     "<<    trackParamDXDZE<<std::endl;
-//   std::cout<<" trackParamDYDZE     "<<    trackParamDYDZE<<std::endl;
+//   std::cout<<" trackParamX	  "<<    trackParamX<<std::endl;
+//   std::cout<<" trackParamY	  "<<    trackParamY <<std::endl;
+//   std::cout<<" trackParamDXDZ  "<<    trackParamDXDZ<<std::endl;
+//   std::cout<<" trackParamDYDZ  "<<    trackParamDYDZ<<std::endl;
+//   std::cout<<" trackParamXE    "<<    trackParamXE<<std::endl;
+//   std::cout<<" trackParamYE    "<<    trackParamYE<<std::endl;
+//   std::cout<<" trackParamDXDZE "<<    trackParamDXDZE<<std::endl;
+//   std::cout<<" trackParamDYDZE "<<    trackParamDYDZE<<std::endl;
 //
    reso->Fill();
 	   }
@@ -494,7 +558,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
     } // it
 
 ////// Endof Plugin of Nico code:
-
 }
 
 void HitResol::endJob(){
@@ -630,16 +693,16 @@ bool HitResol::getPairParameters(const MagneticField* magField_, AnalyticalPropa
     propagator.propagateWithPath(comb1,fwdPred2.surface());
   TrajectoryStateOnSurface comb1At2 = tsosWithS.first;
   if ( !comb1At2.isValid() )  return false;
-  //distance of propagation from one surface to the next==could cut here
+  // distance of propagation from one surface to the next==could cut here
   pairPath = tsosWithS.second;
   if (TMath::Abs(pairPath) > 15 ) return false; //cut to remove hit pairs > 15 cm apart
 
   // local parameters and errors on module 1
   AlgebraicVector5 pars = comb1.localParameters().vector();
   AlgebraicSymMatrix55 errs = comb1.localError().matrix();
-  //number 3 is predX
+  // number 3 is predX
   double predX1 = pars[3];
-  //track fitted parameters in local coordinates for position 0
+  // track fitted parameters in local coordinates for position 0
   (trackParamX    ) = pars[3];
   (trackParamY    ) = pars[4];
   (trackParamDXDZ ) = pars[1];
@@ -654,9 +717,7 @@ bool HitResol::getPairParameters(const MagneticField* magField_, AnalyticalPropa
   errs = comb1At2.localError().matrix();
   double predX2 = pars[3];
 
-  ////
-  //// jacobians (local-to-global@1,global 1-2,global-to-local@2)
-  ////
+  // jacobians (local-to-global@1,global 1-2,global-to-local@2)
   JacobianLocalToCurvilinear jacLocToCurv(comb1.surface(),
       comb1.localParameters(),
       *magField_);
@@ -728,6 +789,27 @@ unsigned int HitResol::checkLayer( unsigned int iidd, const TrackerTopology* tTo
     return tTopo->tecWheel(iidd) + 13 ;
   }
   return 0;
+}
+
+float HitResol::stripErrorSquared(const unsigned N,
+                                  const float uProj,
+                                  const SiStripDetId::SubDetector loc) const {
+    auto fun = [&](float x) -> float { return mLC_P[0] * x * vdt::fast_expf(-x * mLC_P[1]) + mLC_P[2]; };
+    auto uerr = (N <= 4) ? fun(uProj) : mHC_P[loc - 3][0] + float(N) * mHC_P[loc - 3][1];
+    return uerr * uerr;
+}
+
+float HitResol::legacyStripErrorSquared(const unsigned N, const float uProj) const {
+    if
+      UNLIKELY((float(N) - uProj) > 3.5f)
+    return float(N * N) / 12.f;
+    else {
+        static constexpr float P1 = -0.339;
+        static constexpr float P2 = 0.90;
+        static constexpr float P3 = 0.279;
+        const float uerr = P1 * uProj * vdt::fast_expf(-uProj * P2) + P3;
+        return uerr * uerr;
+    }
 }
 
 //define this as a plug-in
