@@ -5,21 +5,22 @@ Method used from CMSSW - StripCPEfromTrackAngle; Takes the track angle estimate 
 ```bash
  cmsrel CMSSW_11_2_2_patch1
  cd CMSSW_11_2_2_patch1/src
+ cms_env # specific to ingrid, https://github.com/kjaffel/ZA_FullAnalysis#environment-setup-always- 
  cmsenv
- scram b
- # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideScram
+ scram b # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideScram
 ```
 ## Creation of Private Skim [Slurm]:
 In order to allow parallelisation and fast iterations, a private skim of files is created from the AlCaReco files. The event content is minimised to the needs for the CPEEstimator, a tighter preselection is also applied, and the files are split in size for optimising between number of files and number of events inside. Skimming is done using the configuration in SiStripCPE/CPEanalyzer/test/skimProducer_cfg.py. There, the used track selection is defined in `SiStripCPE/CPEanalyzer/python/CPETrackSelector_cff.py`, and the trigger selection in `SiStripCPE/CPEanalyzer/python/TriggerSelection_cff.py` (the trigger selection is disabled by default). The event content is defined in `SiStripCPE/CPEanalyzer/python/PrivateSkim_EventContent_cff.py`.
 
  Which dataset to process is steered via a configurable parameter using the VarParsing, which also allows a local test run. After having run those two scripts for each dataset that one wants to process, the skim is ready for the automated workflow of the Cluster Parameter Estimation. 
 ### Run a Skim Test :
-`configs\alcareco_2018DExpress_localtest.yml` will be used by default as an input:
+`configs\alcareco_localtest.yml` will be used by default as an input:
 ```python
-python CPE4slurm.py --isTest --task skimmer -o mytestDIR
+python CPE4slurm.py --isTest --task skim -o mytestDIR
+python CPE4slurm.py -y ../configs/alcareco_run2minBias.yml --task hitresolution -o prod_ver05.25
 ```
 - ``-o``/ ``--output``:  Output directory 
-- ``-y``/``--yml``    :  Yml file that include your AlcaReco samples should be saved in: configs/
+- ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
 - ``--task``   :  skim/hitresolution 
 - ``--isTest`` :  will pass one root file on slurm as cross-check
 ## Event, Track and Hit Selections:
@@ -62,6 +63,7 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 - []()
 - [11.11 CPE reparameterization update](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
 ## References:
+- [Hit resolution](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master)
 - [ CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
 - [Project CMSSW displayed by LXR](https://cmssdt.cern.ch/lxr/source/DataFormats/SiStripCluster/interface/SiStripClusterTools.h)
 - ["Measurement of Associated Z-Boson and b-Jet Production in Proton-Proton Collisions with the CMS Experiment"](http://cdsweb.cern.ch/record/1476930)
