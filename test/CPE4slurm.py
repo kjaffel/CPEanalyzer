@@ -8,6 +8,7 @@ import argparse
 import collections
 import shutil
 import subprocess
+from pprint import pprint
 from os import path, listdir
 from CP3SlurmUtils.Configuration import Configuration
 from CP3SlurmUtils.SubmitWorker import SubmitWorker
@@ -41,6 +42,7 @@ except ImportError:
     print(" Add colours to the output of Python logging module via : https://pypi.org/project/colorlog/")
     pass
 
+# WIP : not sure anymore if I want to use plotIt for CPE
 def update_plotItFiles(data= None, era= None, rootf= None):
     data.update( {"{}:".format(rootf): {
             "type": "data",
@@ -50,11 +52,15 @@ def update_plotItFiles(data= None, era= None, rootf= None):
             } })
     return data
 
-def list_dir(dir_):
-    ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", dir_]
-    subprocess.check_call(ls_cmd, stdout=subprocess.PIPE)
-    subdir = subprocess.check_output(ls_cmd).split('\n')
-    subdir = filter(None, subdir)
+def list_dir(thisDir):
+    subdir =[]
+    ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", thisDir]
+    try :
+        subprocess.check_call(ls_cmd, stdout=subprocess.PIPE)
+        subdir = subprocess.check_output(ls_cmd).split('\n')
+        subdir = filter(None, subdir)
+    except subprocess.CalledProcessError:
+        logger.error("Failed to run {0}".format(" ".join(ls_cmd)))
     return subdir
 
 def mapDir(prefix, directory):
@@ -81,10 +87,15 @@ def makeFileList(prefix, dirMap):
     return fileList
 
 def getFileList(dirName):
+    pprint (mapDir(dirName, dirName))
     return makeFileList(dirName, mapDir(dirName, dirName))
 
 
 def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, isTest=False):
+    
+    files_ = []
+    inputParams = []
+    filesParams_persmp = []
     data = collections.defaultdict(dict)
     
     with open(analysisCfgs,"r") as file:
@@ -101,30 +112,30 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            inputParams = [[cfg["db"], os.path.join(outputdir_Persmp, "output_1.root"), task, "--sample=%s"%outputdir_Persmp]]
+            filesParams_persmp.append([cfg["db"], os.path.join(outputdir_Persmp, "output_1.root"), task, "--sample=%s"%outputdir_Persmp])
         else:
-            try: 
+            try: # to find files on T2 
                 files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
-                files_=[file.replace('/storage/data/cms/','') for file in files]
+                files_ =[file.replace('/storage/data/cms/','') for file in files]
             except Exception as ex:
-                logger.exception("{} root files not found ** ".format( files))
-            else:
+                logger.exception("{} root files not found locally ** ".format( files))
                 if not os.path.exists("../configs/dascache/{}.dat".format(smp)):
+                    logger.exception("searching files using root://eoscms.cern.ch ** ".format( files))
                     #/eos/cms/store/express/Run2018A/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/*/*/*/*/*.root
                     ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", cfg["db"]]
                     try:
                         subprocess.check_call(ls_cmd, stdout=subprocess.PIPE) 
+                        print( "dirName to get file list:", subprocess.check_output(ls_cmd).split('\n'))
                         files_ = getFileList(subprocess.check_output(ls_cmd).replace('\n', ''))
-                        print( 'Files List : ', files_)
+                        pprint( 'Files List : ', files_)
                     except subprocess.CalledProcessError:
                         logger.error("Failed to run {0}".format(" ".join(ls_cmd)))
                     
                     with open('../configs/dascache/{}.dat', 'w') as outfile:
                             outfile.writelines("%s\n" % f for f in files_)
                 else:
-                    files_ = []
                     # open file and read the content in a list
-                    logger.debug(" dascache is found for sample {} , so the files in dascache/{}.dat will be used , if you want to catch changes you made in the configs/yaml . please remove the cache ! " .format(smp, smp ))
+                    logger.debug(" dascache is found for sample {} , so the files in dascache/{}.dat will be used , if you want to catch changes you made in the configs/yaml . please remove the dascache ! " .format(smp, smp ))
                     with open('../configs/dascache/{}.dat'.format(smp), 'r') as filehandle:
                         files_ = [f.rstrip() for f in filehandle.readlines()]
             
@@ -133,11 +144,14 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            inputParams = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%outputdir_Persmp] for idx,input in enumerate(sliced) ]
+            filesParams_persmp = [ [ ",".join(input), os.path.join(outputdir_Persmp, "output_%s.root"%idx), task, "--sample=%s"%outputdir_Persmp] for idx,input in enumerate(sliced) ]
+    
+    inputParams = filesParams_persmp
     
     yamlfile = open(os.path.join(stageoutDir, "plotit_files.yml"), "w")
     yaml.dump(data, yamlfile)
     yamlfile.close()
+    
     return inputParams 
 
 def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTest=False):
@@ -187,13 +201,12 @@ if __name__ == '__main__':
     parser.add_argument('--task', action='store', choices= ["skim", "hitresolution"], help='')
     options = parser.parse_args()
     
-    if options.outputdir is None:
-        outputdir = os.makedirs(current_time)
     if os.path.exists(options.outputdir):
         logger.warning("Output directory {} exists, previous results may be overwritten".format( options.outputdir))
     
     if options.isTest:
-        YmlFile ='../configs/alcareco_2018DExpress_localtest.yml'
+        # 1 data & 1 mc sample 
+        YmlFile ='../configs/alcareco_localtest.yml'
     else:
         YmlFile = options.yml
     
