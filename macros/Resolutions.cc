@@ -253,13 +253,13 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto MomentaFunction{[&RegionInt](const float& momentum_input){
 
 	if(RegionInt == 21 || RegionInt == 22){return momentum_input > 5;} //pixels
-	else{return momentum_input > 15;} //strips
+	else{return momentum_input > 3;} //strips
   }};
 
   auto dataframe_filtered = dataframe.Filter(PairPathCriteriaFunction, {"pairPath"}, "Pair path criterion filter")
 				     .Filter(MomentaFunction, {"momentum"}, "Momentum criterion filter")
-			         .Filter("trackChi2 > 0.001", "chi2 criterion filter")
-				     .Filter("numHits > 6", "numHits filter")
+			         .Filter("trackChi2 >= 0.001", "chi2 criterion filter")
+				     .Filter("numHits >= 6", "numHits filter")
 				     .Filter("trackDXE < 0.0025", "trackDXE filter")
 				     .Filter("(clusterW1 == clusterW2) && clusterW1 <= 4 && clusterW2 <= 4", "cluster filter");
 
@@ -348,7 +348,7 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
 
   }
  
-  if (DOESEXIST) {
+  if (DOESEXIST==true) {
       /* Directory exists. */
       std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
       string cmd = "mv ";
