@@ -38,6 +38,7 @@ import batch_slurm
 import argparse
 import glob 
 import yaml
+from pprint import pprint
 from collections import defaultdict
 from functools import partial
 
@@ -88,15 +89,13 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                     aProblem = True
                 tskOut_by_name = defaultdict(list)
                 for fn in tskOut:
-                    if not fn.startswith('output_') and not fn.endswith('.root'):
-                        continue
-                    tskOut_by_name[os.path.basename(fn)].append(fn)
+                    tskOut_by_name[tsk.name].append(fn)
                 for outFileName, outFiles in tskOut_by_name.items():
                     if nExpected != len(outFiles):
-                        logger.error("Not all jobs for {} produced an output file {} ({:d}/{:d} found), cannot finalize".format(tsk.name, outFileName, len(outFiles), nExpected))
+                        logger.error("Not all jobs for {} produced an output ({:d}/{:d} found), task cannot finalize".format(tsk.name, len(outFiles), nExpected))
                         aProblem = True
                     else:
-                        haddCmd = ["hadd", "-f", os.path.join(resultsdir, "{}.root".format(tsk.name))]+outFiles
+                        haddCmd = ["hadd", "-f", os.path.join(resultsdir, "{}.root".format(tsk.name))]+outFiles # BUG FIXME 
                         try:
                             logger.debug("Merging outputs for sample {0} with {1}".format(tsk.name, " ".join(haddCmd)))
                             subprocess.check_call(haddCmd)#, stdout=subprocess.DEVNULL) 
@@ -104,7 +103,7 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                             logger.error("Failed to run {0}".format(" ".join(haddCmd)))
                             aProblem = True
             if aProblem:
-                logger.error("Something went wrong with some of your Jobs ! ")
+                logger.error("Something went wrong with some of your Jobs, not all tasks are finalized ! ")
                 return
             else:
                 logger.info("All tasks finalized")
@@ -128,6 +127,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RUN CPE FIANLIZE')
     parser.add_argument('--finalize', action='store_true', default=True, help='')
     parser.add_argument('--workdir', required=True, help='')
+    
     options = parser.parse_args()
+    
     FINALIZE_JOBS(workdir=options.workdir, finalize=options.finalize)
+    
     RUN_PLOTTER(workdir=options.workdir)

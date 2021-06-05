@@ -16,7 +16,7 @@ import subprocess
 
 from batch import CommandListJob as CommandListJobBase
 from batch import TasksMonitor
-
+from pprint import pprint
 try:
     from CP3SlurmUtils.Configuration import Configuration as CP3SlurmConfiguration
     from CP3SlurmUtils.ConfigurationUtils import validConfigParams as CP3SlurmConfigValidParams
@@ -271,16 +271,14 @@ def findOutputsForCommands(batchDir, commandMatchers):
     matches = dict()
     id_noOut = []
     for mName, matcher in commandMatchers.items():
-        ids_matched = [ (i, cmd) for i, cmd in zip(count(1), cmds) if matcher(cmd) ]
+        ids_matched = [ (i, cmd) for i, cmd in zip(count(), cmds) if matcher(cmd) ]
         files_found = []
-        print( "ids_matched", ids_matched)
         if not ids_matched:
             logger.warning("No jobs matched for {}".format(mName))
         else:
+            outdir = os.path.join(batchDir, "outputs", mName)#, "output_%s"%str(sjId))
             for sjId, cmd in ids_matched:
-                cwd = os.getcwd()
-                outdir = os.path.join(batchDir, "outputs", mName)#, "output_%s"%str(sjId))
-                if not os.path.exists(outdir):
+                if not os.path.exists(os.path.join(outdir, "output_%s.root"%str(sjId))):
                     logger.debug("Output directory for {} not found: {} (command: {})".format(mName, outdir, cmd))
                     id_noOut.append(sjId)
                 else:
@@ -288,7 +286,7 @@ def findOutputsForCommands(batchDir, commandMatchers):
                     if not sjOut:
                         logger.debug("No output files for {} found in {} (command: {})".format(mName, outdir, cmd))
                         id_noOut.append(sjId)
-                    files_found += sjOut
+                    files_found = sjOut
         matches[mName] = len(ids_matched), files_found
     return matches, sorted(id_noOut)
 
