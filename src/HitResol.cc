@@ -187,19 +187,23 @@ void HitResol::beginJob(){
   reso->Branch("pairsOnly",&pairsOnly,"pairsOnly/I");
   treso = fs->make<TTree>("treso","tree tracks  for resolution studies");
   treso->Branch("track_momentum",&track_momentum,"track_momentum/F");
+  treso->Branch("track_pt",&track_pt,"track_pt/F");
   treso->Branch("track_eta",&track_eta,"track_eta/F");
   treso->Branch("track_phi",&track_phi,"track_phi/F");
   treso->Branch("track_trackChi2",&track_trackChi2,"track_trackChi2/F");
-  treso->Branch("track_width",&track_width,"track_width/F");
+  treso->Branch("track_width",&expWidth,"track_width/F");  // from 1D HIT 
+  treso->Branch("NumberOf_tracks",&NumberOf_tracks,"Nbr tracks/F");  
   
   events = 0;
   EventTrackCKF = 0;
-  histos2d_["track_phi_vs_eta"]=new TH2F("track_phi_vs_eta",";track phi;track eta",60,-3.5,3.5,60,-3.5,3.5);
+  histos2d_["track_phi_vs_eta"]=new TH2F("track_phi_vs_eta",";track phi;track eta",60,-3.5,3.5,60,-3.,3.);
   //histos2d_["dQdX_vs_trackpT"]=new TH2F("dQdX_vs_trackpT",";dQ/dX;track pT", 60, 0., 10., 60, 0., 100.);
-  histos2d_["simpleResolustion_vs_trackpT"]=new TH2F("simpleResolustion_vs_trackpT",";track pT;Resolution", 60, 0., 40., 60, 0., 200.);
-  histos2d_["simpleResolustion_vs_trackETA"]=new TH2F("simpleResolustion_vs_trackpT",";track #phi;Resolution", 60, 0., 3.5, 60, 0., 200.);
-  histos2d_["simpleResolustion_vs_trackPHI"]=new TH2F("simpleResolustion_vs_trackpT",";track #eta;Resolution", 60, 0., 3.5, 60, 0., 200.);
-  //histos2d_["simpleResolustion_vs_trackWidth"]=new TH2F("simpleResolustion_vs_trackWidth",";Resolution;track Width", 60, 0., 40., 60, 0., 2.);
+  histos2d_["residual_vs_trackMomentum"]=new TH2F("residual_vs_trackMomentum",";track momentum [GeV]; x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 10., 60, 0., 200.);
+  histos2d_["residual_vs_trackPt"]=new TH2F("residual_vs_trackPt",";track p_{T}[GeV];x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 10., 60, 0., 200.);
+  histos2d_["residual_vs_trackEta"]=new TH2F("residual_vs_trackEta",";track #eta;x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 3., 60, 0., 200.);
+  histos2d_["residual_vs_trackPhi"]=new TH2F("residual_vs_trackPhi",";track #phi;x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 3.5, 60, 0., 200.);
+  histos2d_["residual_vs_trackWidth"]=new TH2F("residual_vs_trackWidth",";track Width;x_{pred_track} - x_{reco_hit} [#mum]", 3, 0., 3., 60, 0., 200.);
+  histos2d_["numHits_vs_residual"]=new TH2F("numHits_vs_residual",";x_{pred_track} - x_{reco_hit} [#mum];N Hits", 60, 0., 200., 15, 0., 15.);
 
 }
 
@@ -327,7 +331,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
   // FIXME 
   for(unsigned int iT = 0; iT < tracksCKF->size(); ++iT){
-    track_momentum = tracksCKF->at(iT).pt();
+    track_momentum = tracksCKF->at(iT).p();
+    track_pt = tracksCKF->at(iT).p();
     track_eta = tracksCKF->at(iT).eta();
     track_phi = tracksCKF->at(iT).phi();
     track_trackChi2   = ChiSquaredProbability((double)( tracksCKF->at(iT).chi2() ),(double)( tracksCKF->at(iT).ndof() ));
@@ -335,7 +340,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
     
   }
   histos2d_["track_phi_vs_eta"]->Fill(track_phi, track_eta);
-  track_width = tracksCKF->size();
+  NumberOf_tracks = tracksCKF->size();
 
 
   // loop over trajectories from refit
@@ -462,9 +467,13 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
           // simple resolution by using the track re-fit forward and backward predicted state
           simpleRes = getSimpleRes(&(*itm)); 
-          histos2d_["simpleResolustion_vs_trackpT"]->Fill(track_momentum, simpleRes*10000); // reso in cm *10000 == micro-meter
-          histos2d_["simpleResolustion_vs_trackETA"]->Fill(track_eta, simpleRes*10000);    
-          histos2d_["simpleResolustion_vs_trackPHI"]->Fill(track_phi, simpleRes*10000);
+          //residual = predicted track - reconstructed hit 
+          histos2d_["residual_vs_trackMomentum"]->Fill(track_momentum, simpleRes*10000); // reso in cm *10000 == micro-meter
+          histos2d_["residual_vs_trackPt"]->Fill(track_pt, simpleRes*10000); // reso in cm *10000 == micro-meter
+          histos2d_["residual_vs_trackEta"]->Fill(track_eta, simpleRes*10000);    
+          histos2d_["residual_vs_trackPhi"]->Fill(track_phi, simpleRes*10000);
+          histos2d_["residual_vs_trackWidth"]->Fill(expWidth, simpleRes*10000);
+          histos2d_["numHits_vs_residual"]->Fill(simpleRes*10000, numHits);
           // Now to see if there is a match - pair method - hit in overlapping sensors
           vector < TrajectoryMeasurement >::const_iterator itTraj2 =  TMeas.end(); // last hit along the fitted track
 
