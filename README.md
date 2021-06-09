@@ -5,18 +5,22 @@ Method used from CMSSW - StripCPEfromTrackAngle; Takes the track angle estimate 
 ```bash
  cmsrel CMSSW_11_2_2_patch1
  cd CMSSW_11_2_2_patch1/src
- cms_env # specific to ingrid, https://github.com/kjaffel/ZA_FullAnalysis#environment-setup-always- 
+ # specific to ingrid, https://github.com/kjaffel/ZA_FullAnalysis#environment-setup-always- 
+ cms_env 
  cmsenv
- scram b # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideScram
+ mkdir SiStripCPE
+ git clone https://github.com/kjaffel/CPEanalyzer -o SiStripCPE/CPEanalyzer
+ # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideScram
+ scram b 
 ```
 ## Creation of Private Skim [Slurm]:
 In order to allow parallelisation and fast iterations, a private skim of files is created from the AlCaReco files. The event content is minimised to the needs for the CPEEstimator, a tighter preselection is also applied, and the files are split in size for optimising between number of files and number of events inside. Skimming is done using the configuration in SiStripCPE/CPEanalyzer/test/skimProducer_cfg.py. There, the used track selection is defined in `SiStripCPE/CPEanalyzer/python/CPETrackSelector_cff.py`, and the trigger selection in `SiStripCPE/CPEanalyzer/python/TriggerSelection_cff.py` (the trigger selection is disabled by default). The event content is defined in `SiStripCPE/CPEanalyzer/python/PrivateSkim_EventContent_cff.py`.
 
  Which dataset to process is steered via a configurable parameter using the VarParsing, which also allows a local test run. After having run those two scripts for each dataset that one wants to process, the skim is ready for the automated workflow of the Cluster Parameter Estimation. 
-### Run a Skim Test :
+### Launch a Test :
 `configs\alcareco_localtest.yml` will be used by default as an input:
 ```python
-python CPE4slurm.py --isTest --task skim -o mytestDIR
+python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 python CPE4slurm.py -y ../configs/alcareco_run2minBias.yml --task hitresolution -o prod_ver05.25
 ```
 - ``-o``/ ``--output``:  Output directory 
@@ -29,7 +33,7 @@ The strip hit resolution is computed by using hits in overlapping modules of the
 Tracks are selected with the following cuts:
 - Good identified and isolated muons 
 - Flagged as `high purity` in order to minimise incorrect cluster assignments
-- `min pT ~ 0.5 GeV`
+- `min pT 3 GeV`
 - The impact parameter is required to be close to the beamspot : `|d0| < 20 cm |dz| < 60 cm`
 - Goodness of the track fit : The track fit must yield a good `X2`
 - With the selection of tracks of high transverse momentum, the angles are mainly small and so is the cluster width. 
@@ -70,4 +74,5 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 - [PHD-thesis Chapter4:Associated top-quark-pair and b-jetproduction in the dilepton channelat√s = 8  TeV as test of QCDand background to tt+Higgsproduction](https://bib-pubdb1.desy.de/record/222384/files/thesis.pdf)
 - [ SiStrip cluster MC truth tools ](https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideStripClusterMCtruth)
 - [ Analysis Tutorial](http://www.t2.ucsd.edu/twiki2/bin/view/UCSDTier2/AnalysisTutorial?sortcol=table;table=up#Efficiency_Plots)
+- [Troubleshooting Guide](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookTroubleShooting)
 - [Strip hit resolution of CMS Tracker analysis: DOI:10.13140/RG.2.2.11136.84480](https://www.researchgate.net/publication/317633066_Strip_hit_resolution_of_CMS_Tracker_analysis)
