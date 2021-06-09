@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Package:          CalibTracker/SiStripHitResolution
 // Class:            HitResol
-// Original Author:  DG
+// Original Authors:  Denis Gele and Kathryn Coldham
 //                   adapted from HitEff
-//                   modified by Khawla Jaffel 
+//                   modified by Khawla Jaffel for CPE studies
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +64,7 @@
 
 #include "TMath.h"
 #include "TH1F.h"
+#include "TH2F.h"
 
 //ModifDG
 #include "CommonTools/Statistics/interface/ChiSquaredProbability.h"
@@ -156,6 +157,9 @@ void HitResol::beginJob(){
   reso->Branch("trackChi2",&ProbTrackChi2,"trackChi2/F");
   reso->Branch("detID1",&iidd1,"detID1/I");
   reso->Branch("pitch1",&mypitch1,"pitch1/F");
+  reso->Branch("pitch2",&mypitch_2,"pitch2/F");
+  reso->Branch("StripCPE1_simple_pos_error",&StripCPE1_smp_pos_error,"StripCPE1_simple_pos_error/F");
+  reso->Branch("StripCPE2_simple_pos_error",&StripCPE2_smp_pos_error,"StripCPE2_simple_pos_error/F");
   reso->Branch("clusterW1",&clusterWidth,"clusterW1/I");
   reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
   reso->Branch("expectedW1",&expWidth,"expectedW1/F");
@@ -186,9 +190,17 @@ void HitResol::beginJob(){
   treso->Branch("track_eta",&track_eta,"track_eta/F");
   treso->Branch("track_phi",&track_phi,"track_phi/F");
   treso->Branch("track_trackChi2",&track_trackChi2,"track_trackChi2/F");
-
+  treso->Branch("track_width",&track_width,"track_width/F");
+  
   events = 0;
   EventTrackCKF = 0;
+  histos2d_["track_phi_vs_eta"]=new TH2F("track_phi_vs_eta",";track phi;track eta",60,-3.5,3.5,60,-3.5,3.5);
+  //histos2d_["dQdX_vs_trackpT"]=new TH2F("dQdX_vs_trackpT",";dQ/dX;track pT", 60, 0., 10., 60, 0., 100.);
+  histos2d_["simpleResolustion_vs_trackpT"]=new TH2F("simpleResolustion_vs_trackpT",";track pT;Resolution", 60, 0., 40., 60, 0., 200.);
+  histos2d_["simpleResolustion_vs_trackETA"]=new TH2F("simpleResolustion_vs_trackpT",";track #phi;Resolution", 60, 0., 3.5, 60, 0., 200.);
+  histos2d_["simpleResolustion_vs_trackPHI"]=new TH2F("simpleResolustion_vs_trackpT",";track #eta;Resolution", 60, 0., 3.5, 60, 0., 200.);
+  //histos2d_["simpleResolustion_vs_trackWidth"]=new TH2F("simpleResolustion_vs_trackWidth",";Resolution;track Width", 60, 0., 40., 60, 0., 2.);
+
 }
 
 
@@ -276,6 +288,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
    ProbTrackChi2    = 0;
    iidd1            = 0;
    mypitch1         = 0;
+   mypitch_2        = 0;
+   StripCPE1_smp_pos_error = 0;
+   StripCPE2_smp_pos_error = 0;
    clusterWidth     = 0;
    clusterCharge    = 0;
    expWidth         = 0;
@@ -310,13 +325,18 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 ////// Plugin of Nico code:
   std::cout<<"Starting analysis, nrun nevent, tracksCKF->size(): "<<run_nr<<" "<<ev_nr<<" "<<  tracksCKF->size() <<std::endl;
 
+  // FIXME 
   for(unsigned int iT = 0; iT < tracksCKF->size(); ++iT){
     track_momentum = tracksCKF->at(iT).pt();
     track_eta = tracksCKF->at(iT).eta();
     track_phi = tracksCKF->at(iT).phi();
     track_trackChi2   = ChiSquaredProbability((double)( tracksCKF->at(iT).chi2() ),(double)( tracksCKF->at(iT).ndof() ));
     treso->Fill();
+    
   }
+  histos2d_["track_phi_vs_eta"]->Fill(track_phi, track_eta);
+  track_width = tracksCKF->size();
+
 
   // loop over trajectories from refit
   for ( const auto& traj : *trajectoryCollection ) {
@@ -363,6 +383,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           const StripTopology& Topo  = stripdet->specificTopology();
           int Nstrips = Topo.nstrips();
           mypitch1 = stripdet->surface().bounds().width() / Topo.nstrips();
+          StripCPE1_smp_pos_error = mypitch1/sqrt(12);
 
           const auto det = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(mypointhit->geographicalId()));
 
@@ -379,6 +400,13 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           auto corr = par.corr;
           auto afp = par.afullProjection;
          
+          
+          //const auto& cluster_ = *(hit1d->cluster());
+          //float dQdX = siStripClusterTools::chargePerCM(cluster_, ltp, p.invThickness);
+          //histos2d_["dQdX_vs_trackpT"]->Fill(dQdX, track_momentum);
+          
+          
+          
           if (hit1d) {
              const auto& cluster = *(hit1d->cluster());
 //             float myres = getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
@@ -434,7 +462,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
           // simple resolution by using the track re-fit forward and backward predicted state
           simpleRes = getSimpleRes(&(*itm)); 
-
+          histos2d_["simpleResolustion_vs_trackpT"]->Fill(track_momentum, simpleRes*10000); // reso in cm *10000 == micro-meter
+          histos2d_["simpleResolustion_vs_trackETA"]->Fill(track_eta, simpleRes*10000);    
+          histos2d_["simpleResolustion_vs_trackPHI"]->Fill(track_phi, simpleRes*10000);
           // Now to see if there is a match - pair method - hit in overlapping sensors
           vector < TrajectoryMeasurement >::const_iterator itTraj2 =  TMeas.end(); // last hit along the fitted track
 
@@ -476,9 +506,10 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           const StripTopology& Topo_2  = stripdet_2->specificTopology();
           int Nstrips_2 = Topo_2.nstrips();
           float mypitch_2 = stripdet_2->surface().bounds().width() / Topo_2.nstrips();
-
+          
+          StripCPE2_smp_pos_error = mypitch_2/sqrt(12);
+          
           if ( mypitch1 != mypitch_2 ) return;  // for PairsOnly
-
 
           const auto det_2 = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(myhit2->geographicalId()));
 
@@ -555,7 +586,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 	   }
        }//itTraj2 != TMeas.end()
 
-
     }//hit1->isValid()....
 
       } // itm
@@ -574,6 +604,9 @@ void HitResol::endJob(){
   reso->GetDirectory()->cd();
   reso->Write();
   treso->Write();
+  for(std::map<TString,TH2F *>::iterator it = histos2d_.begin(); it != histos2d_.end(); it++) {
+    it->second->Write();
+   }
 }
 
 double HitResol::checkConsistency(const StripClusterParameterEstimator::LocalValues& parameters, double xx, double xerr) {
