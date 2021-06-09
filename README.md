@@ -21,7 +21,6 @@ In order to allow parallelisation and fast iterations, a private skim of files i
 `configs\alcareco_localtest.yml` will be used by default as an input:
 ```python
 python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
-python CPE4slurm.py -y ../configs/alcareco_run2minBias.yml --task hitresolution -o prod_ver05.25
 ```
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
