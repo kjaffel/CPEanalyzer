@@ -118,6 +118,9 @@ class HitResol : public edm::EDAnalyzer {
   
   TTree* reso;
   TTree* treso;
+  std::map<TString,TH2F *> histos2d_;
+  TFile *outF_;
+  //TH2F* cpe;
 
   int events,EventTrackCKF;
   
@@ -133,9 +136,13 @@ class HitResol : public edm::EDAnalyzer {
 //Hit Resolution Ntuple Content
   float        mymom            ;
   int          numHits          ;
+  int          NumberOf_tracks  ;
   float        ProbTrackChi2    ;
   unsigned int iidd1            ;
   float        mypitch1         ;
+  float        mypitch_2        ;
+  float        StripCPE1_smp_pos_error;
+  float        StripCPE2_smp_pos_error;
   unsigned int clusterWidth     ;
   unsigned int clusterCharge    ;
   float        expWidth         ;
@@ -162,7 +169,9 @@ class HitResol : public edm::EDAnalyzer {
   float        trackParamDYDZE  ;
   unsigned int pairsOnly        ;
   float        track_momentum   ;
+  float        track_pt   ;
   float        track_eta        ;
+  float        track_width      ;
   float        track_phi        ;
   float        track_trackChi2  ;
   float        N1;

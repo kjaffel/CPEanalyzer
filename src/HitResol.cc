@@ -162,19 +162,19 @@ void HitResol::beginJob(){
   reso->Branch("StripCPE2_simple_pos_error",&StripCPE2_smp_pos_error,"StripCPE2_simple_pos_error/F");
   reso->Branch("clusterW1",&clusterWidth,"clusterW1/I");
   reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
-  reso->Branch("expectedW1",&expWidth,"expectedW1/F");
+  reso->Branch("expectedW1",&expWidth,"expectedW1/F");        // from hit 1 
   reso->Branch("StripErrorSquared1",&uerr2,"StripErrorSquared1/F");
   reso->Branch("atEdge1",&atEdge,"atEdge1/F");
   reso->Branch("simpleRes",&simpleRes,"simpleRes/F");
   reso->Branch("detID2",&iidd2,"detID2/I");
   reso->Branch("clusterW2",&clusterWidth_2,"clusterW2/I");
   reso->Branch("clusterCharge2",&clusterCharge_2,"clusterCharge2/I");
-  reso->Branch("expectedW2",&expWidth_2,"expectedW2/F");
+  reso->Branch("expectedW2",&expWidth_2,"expectedW2/F");     // from hit 2  
   reso->Branch("StripErrorSquared2",&uerr2_2,"StripErrorSquared2/F");
   reso->Branch("atEdge2",&atEdge_2,"atEdge2/F");
   reso->Branch("pairPath",&pairPath,"pairPath/F");
-  reso->Branch("hitDX",&hitDX,"hitDX/F");
-  reso->Branch("trackDX",&trackDX,"trackDX/F");
+  reso->Branch("hitDX",&hitDX,"hitDX/F");                   // measured hit
+  reso->Branch("trackDX",&trackDX,"trackDX/F");             // predicted  track
   reso->Branch("trackDXE",&trackDXE,"trackDXE/F");
   reso->Branch("trackParamX",&trackParamX,"trackParamX/F");
   reso->Branch("trackParamY",&trackParamY,"trackParamY/F");
@@ -202,7 +202,7 @@ void HitResol::beginJob(){
   histos2d_["residual_vs_trackPt"]=new TH2F("residual_vs_trackPt",";track p_{T}[GeV];x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 10., 60, 0., 200.);
   histos2d_["residual_vs_trackEta"]=new TH2F("residual_vs_trackEta",";track #eta;x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 3., 60, 0., 200.);
   histos2d_["residual_vs_trackPhi"]=new TH2F("residual_vs_trackPhi",";track #phi;x_{pred_track} - x_{reco_hit} [#mum]", 60, 0., 3.5, 60, 0., 200.);
-  histos2d_["residual_vs_trackWidth"]=new TH2F("residual_vs_trackWidth",";track Width;x_{pred_track} - x_{reco_hit} [#mum]", 3, 0., 3., 60, 0., 200.);
+  histos2d_["residual_vs_expectedWidth"]=new TH2F("residual_vs_expectedWidth",";track Width;x_{pred_track} - x_{reco_hit} [#mum]", 3, 0., 3., 60, 0., 200.);
   histos2d_["numHits_vs_residual"]=new TH2F("numHits_vs_residual",";x_{pred_track} - x_{reco_hit} [#mum];N Hits", 60, 0., 200., 15, 0., 15.);
 
 }
@@ -472,7 +472,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           histos2d_["residual_vs_trackPt"]->Fill(track_pt, simpleRes*10000); // reso in cm *10000 == micro-meter
           histos2d_["residual_vs_trackEta"]->Fill(track_eta, simpleRes*10000);    
           histos2d_["residual_vs_trackPhi"]->Fill(track_phi, simpleRes*10000);
-          histos2d_["residual_vs_trackWidth"]->Fill(expWidth, simpleRes*10000);
+          histos2d_["residual_vs_expectedWidth"]->Fill(expWidth, simpleRes*10000);
           histos2d_["numHits_vs_residual"]->Fill(simpleRes*10000, numHits);
           // Now to see if there is a match - pair method - hit in overlapping sensors
           vector < TrajectoryMeasurement >::const_iterator itTraj2 =  TMeas.end(); // last hit along the fitted track
