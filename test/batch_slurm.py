@@ -268,10 +268,12 @@ def findOutputsForCommands(batchDir, commandMatchers):
                 else:
                     cmds.append(ln.strip().strip('"'))
             ln = next(slurmFile)
+        
     matches = dict()
     id_noOut = []
     for mName, matcher in commandMatchers.items():
-        ids_matched = [ (i, cmd) for i, cmd in zip(count(), cmds) if matcher(cmd) ]
+        cmds_ = [ cmd for cmd in cmds if mName in cmd.split('/')]
+        ids_matched = [ (i, cmd) for i, cmd in enumerate(cmds_) if matcher(cmd) ]
         files_found = []
         if not ids_matched:
             logger.warning("No jobs matched for {}".format(mName))
@@ -279,7 +281,7 @@ def findOutputsForCommands(batchDir, commandMatchers):
             outdir = os.path.join(batchDir, "outputs", mName)#, "output_%s"%str(sjId))
             for sjId, cmd in ids_matched:
                 if not os.path.exists(os.path.join(outdir, "output_%s.root"%str(sjId))):
-                    logger.debug("Output directory for {} not found: {} (command: {})".format(mName, outdir, cmd))
+                    logger.debug(" sub-job output_{}.root not found for samples {}: {} (command: {})".format(str(sjId), mName, outdir,cmd))
                     id_noOut.append(sjId)
                 else:
                     sjOut = [ os.path.join(outdir, fn) for fn in os.listdir(outdir) ]
