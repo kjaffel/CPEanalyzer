@@ -1,6 +1,7 @@
 # CPEanalyzer
 Cluster Parameter Estimator: algorithm used to determine the position and errors of the CMS Pixel and Strip clusters .
-Method used from CMSSW - StripCPEfromTrackAngle; Takes the track angle estimate into account when applying the Lorentz angle and back plane correction, and uses a resolution parameterization as a function of the expected cluster width
+Method used from CMSSW - StripCPEfromTrackAngle; Takes the track angle estimate into account when applying the Lorentz angle and back plane correction, and uses a resolution parameterization as a function of the expected cluster width. 
+This repositry is based on [Hit resolution repositry](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master) and large part of the code have been re-used for CPE studies purposes ! 
 ## Recipe for your favorite CMSSW version:[current cmssw working version : 11_2_2_patch1]
 ```bash
  cmsrel CMSSW_11_2_2_patch1
@@ -66,7 +67,6 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 - []()
 - [11.11 CPE reparameterization update](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
 ## References:
-- [Hit resolution](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master)
 - [ CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
 - [Project CMSSW displayed by LXR](https://cmssdt.cern.ch/lxr/source/DataFormats/SiStripCluster/interface/SiStripClusterTools.h)
 - ["Measurement of Associated Z-Boson and b-Jet Production in Proton-Proton Collisions with the CMS Experiment"](http://cdsweb.cern.ch/record/1476930)
