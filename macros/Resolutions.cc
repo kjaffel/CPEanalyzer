@@ -106,6 +106,16 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   else if(region == "TEC_All"){RegionInt = 20;}
   else if(region == "Pixel_Barrel"){RegionInt = 21;}
   else if(region == "Pixel_EndcapDisk"){RegionInt = 22;}
+  else if (region == "TID_R1"){RegionInt = 23;}
+  else if (region == "TID_R2"){RegionInt = 24;}
+  else if (region == "TID_R3"){RegionInt = 25;}
+  else if (region == "TEC_R1"){RegionInt = 26;}
+  else if (region == "TEC_R2"){RegionInt = 27;}
+  else if (region == "TEC_R3"){RegionInt = 28;}
+  else if (region == "TEC_R4"){RegionInt = 29;}
+  else if (region == "TEC_R5"){RegionInt = 30;}
+  else if (region == "TEC_R6"){RegionInt = 31;}
+  else if (region == "TEC_R7"){RegionInt = 32;}
   else{std::cout << "Error: The tracker region " << region << " was chosen. Please choose a region out of: TIB L1, TIB L2, TIB L3, TIB L4, Side TID, Wheel TID, Ring TID, TOB L1, TOB L2, TOB L3, TOB L4, TOB L5, TOB L6, Side TEC, Wheel TEC or Ring TEC." << std::endl; return 0;}
 
 
@@ -118,115 +128,111 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 	switch(RegionInt){
 
 		case 1: {OutputBool = (((detID1_input>>25)&0x7) == 3) && ((detID1_input>>14)&0x7) == 1 &&
-				      (((detID2_input>>25)&0x7) == 3) && ((detID2_input>>14)&0x7) == 1; //TIB L1 
+                              (((detID2_input>>25)&0x7) == 3) && ((detID2_input>>14)&0x7) == 1; //TIB L1 
 			 break;}
-
 		case 2: {OutputBool = (((detID1_input>>25)&0x7) == 3) && (((detID1_input>>14)&0x7) == 2) &&
-				      (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 2); //TIB L2
+				              (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 2); //TIB L2
 			 break;}
-
 		case 3: {OutputBool = (((detID1_input>>25)&0x7) == 3) && (((detID1_input>>14)&0x7) == 3) &&
-				      (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 3); //TIB L3
+				              (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 3); //TIB L3
 			 break;}
-
 		case 4: {OutputBool = (((detID1_input>>25)&0x7) == 3) && (((detID1_input>>14)&0x7) == 4) &&
-				      (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 4); //TIB L4
+				              (((detID2_input>>25)&0x7) == 3) && (((detID2_input>>14)&0x7) == 4); //TIB L4
 			 break;}
-
-
 		case 5: {OutputBool = ( (((detID1_input>>13)&0x3) == 1) && (((detID2_input>>13)&0x3) == 1) ) || 
-                                      ( (((detID1_input>>13)&0x3) == 2) && (((detID2_input>>13)&0x3) == 2) ); //TID Side (1 -> TID-, 2 -> TID+)  
-			 
-    			 break;}
-
+                              ( (((detID1_input>>13)&0x3) == 2) && (((detID2_input>>13)&0x3) == 2) ); //TID Side (1 -> TID-, 2 -> TID+)  
+    		 break;}
 		case 6: {OutputBool = (((detID1_input>>11)&0x3) == 2) && (((detID2_input>>11)&0x3) == 2); //TID Wheel 
-
 			 break;}
-
 		case 7: {OutputBool = ( (((detID1_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) ); //TID Ring 
-			 
  			 break;}
-
-
 		case 8: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 1) &&
-			 	      (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 1); //TOB L1 
+			 	              (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 1); //TOB L1 
 			 break;}
-
 		case 9: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 2) &&
-			              (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 2); //TOB L2  
+			                  (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 2); //TOB L2  
 			 break;}
-
 		case 10: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 3) && 
-				       (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 3); //TOB L3
+				               (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 3); //TOB L3
 			 break;}
-
 		case 11: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 4) &&
-				       (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 4); //TOB L4 
+				               (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 4); //TOB L4 
 			 break;}
-
 		case 12: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 5) &&
-				       (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 5); //TOB L5 
+				               (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 5); //TOB L5 
 			 break;}
-
 		case 13: {OutputBool = (((detID1_input>>25)&0x7) == 5) && (((detID1_input>>14)&0x7) == 6) &&
-				       (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 6); //TOB L6 
+				               (((detID2_input>>25)&0x7) == 5) && (((detID2_input>>14)&0x7) == 6); //TOB L6 
 			 break;}
-
-
 		case 14: {OutputBool = ( (((detID1_input>>18)&0x3) == 1) && (((detID2_input>>18)&0x3) == 1) ) ||
-				       ( (((detID1_input>>18)&0x3) == 2) && (((detID2_input>>18)&0x3) == 2) ); //Side TEC (1 -> back, 2 -> front)
+				               ( (((detID1_input>>18)&0x3) == 2) && (((detID2_input>>18)&0x3) == 2) ); //Side TEC (1 -> back, 2 -> front)
 			 break;}
-
 		case 15: {OutputBool = (((detID1_input>>14)&0xF) == 4) && (((detID2_input>>14)&0xF) == 4); //Wheel TEC 
 			 break;}
-
 		case 16: {OutputBool = (((detID1_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 3); //Ring TEC
-
 			 break;}
-
 		case 17: {OutputBool = ( (((detID1_input>>25)&0x7) == 3) && (((detID2_input>>25)&0x7) == 3) ); //All TIB
-
 			  break;}
-
 	 	case 18: {OutputBool = ( (((detID1_input>>25)&0x7) == 5) && (((detID2_input>>25)&0x7) == 5) ); //All TOB
-			
 			 break;}
-
 		case 19: {OutputBool = ( (((detID1_input>>13)&0x3) == 1) && (((detID2_input>>13)&0x7) == 1) ) ||
-				       ( (((detID1_input>>13)&0x3) == 2) && (((detID2_input>>13)&0x7) == 2) ) ||
-				       ( (((detID1_input>>11)&0x3) == 2) && (((detID2_input>>11)&0x3) == 2) ) || 
-				       ( (((detID1_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) )   ||
-			               ( (((detID1_input>>7)&0x3) == 1) && (((detID2_input>>7)&0x3) == 1) )   ||
-			 	       ( (((detID1_input>>7)&0x3) == 2) && (((detID2_input>>7)&0x3) == 2) )   ||
-				       ( (((detID1_input>>2)&0x1F) == 5) && (((detID2_input>>2)&0x1F) == 5) ) ||
-				       ( (((detID1_input>>0)&0x3) == 0) && (((detID2_input>>0)&0x3) == 0) ) ||
-				       ( (((detID1_input>>0)&0x3) == 1) && (((detID2_input>>0)&0x3) == 1) ) ||
-				       ( (((detID1_input>>0)&0x3) == 2) && (((detID2_input>>0)&0x3) == 2) ); //All TID 
-		
+				               ( (((detID1_input>>13)&0x3) == 2) && (((detID2_input>>13)&0x7) == 2) ) ||
+				               ( (((detID1_input>>11)&0x3) == 2) && (((detID2_input>>11)&0x3) == 2) ) || 
+				               ( (((detID1_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) )   ||
+			                   ( (((detID1_input>>7)&0x3) == 1) && (((detID2_input>>7)&0x3) == 1) )   ||
+			 	               ( (((detID1_input>>7)&0x3) == 2) && (((detID2_input>>7)&0x3) == 2) )   ||
+				               ( (((detID1_input>>2)&0x1F) == 5) && (((detID2_input>>2)&0x1F) == 5) ) ||
+				               ( (((detID1_input>>0)&0x3) == 0) && (((detID2_input>>0)&0x3) == 0) ) ||
+				               ( (((detID1_input>>0)&0x3) == 1) && (((detID2_input>>0)&0x3) == 1) ) ||
+				               ( (((detID1_input>>0)&0x3) == 2) && (((detID2_input>>0)&0x3) == 2) ); //All TID 
 			 break;}
-
-		case 20: {
-
-			 OutputBool =  ( (((detID1_input>>18)&0x3) == 1) && (((detID2_input>>18)&0x3) == 1) ) ||
-                                       ( (((detID1_input>>18)&0x3) == 2) && (((detID2_input>>18)&0x3) == 2) ) ||
-				       ( (((detID1_input>>14)&0xF) == 4) && (((detID2_input>>14)&0xF) == 4) ) ||
-				       ( (((detID1_input>>12)&0x3) == 1) && (((detID2_input>>12)&0x3) == 1) ) ||
-                                       ( (((detID1_input>>12)&0x3) == 2) && (((detID2_input>>12)&0x3) == 2) ) || 
-				       ( (((detID1_input>>8)&0xF) == 4) && (((detID2_input>>8)&0xF) == 4) ) ||
-				       ( (((detID1_input>>5)&0x7) == 3) && (((detID2_input>>5)&0x7) == 3) ) ||
-				       ( (((detID1_input>>2)&0x7) == 3) && (((detID2_input>>2)&0x7) == 3) ) || 
-				       ( (((detID1_input>>0)&0x3) == 1) && (((detID2_input>>0)&0x3) == 1) ) ||
-				       ( (((detID1_input>>0)&0x3) == 2) && (((detID2_input>>0)&0x3) == 2) ) ||
-				       ( (((detID1_input>>0)&0x3) == 3) && (((detID2_input>>0)&0x3) == 3) ); //All TEC
-
+		case 20: {OutputBool =  ( (((detID1_input>>18)&0x3) == 1) && (((detID2_input>>18)&0x3) == 1) ) ||
+                                ( (((detID1_input>>18)&0x3) == 2) && (((detID2_input>>18)&0x3) == 2) ) ||
+				                ( (((detID1_input>>14)&0xF) == 4) && (((detID2_input>>14)&0xF) == 4) ) ||
+				                ( (((detID1_input>>12)&0x3) == 1) && (((detID2_input>>12)&0x3) == 1) ) ||
+                                ( (((detID1_input>>12)&0x3) == 2) && (((detID2_input>>12)&0x3) == 2) ) || 
+				                ( (((detID1_input>>8)&0xF) == 4) && (((detID2_input>>8)&0xF) == 4) ) ||
+				                ( (((detID1_input>>5)&0x7) == 3) && (((detID2_input>>5)&0x7) == 3) ) ||
+				                ( (((detID1_input>>2)&0x7) == 3) && (((detID2_input>>2)&0x7) == 3) ) || 
+				                ( (((detID1_input>>0)&0x3) == 1) && (((detID2_input>>0)&0x3) == 1) ) ||
+				                ( (((detID1_input>>0)&0x3) == 2) && (((detID2_input>>0)&0x3) == 2) ) ||
+				                ( (((detID1_input>>0)&0x3) == 3) && (((detID2_input>>0)&0x3) == 3) ); //All TEC
 			 break;}
-
 		case 21: {OutputBool = (((detID1_input>>20)&0xF) == 4) && (((detID2_input>>20)&0xF) == 4); //pixel barrel (phase 1)
-                         break;}
-
+             break;}
 		case 22: {OutputBool = (((detID1_input>>18)&0xF) == 4) && (((detID2_input>>18)&0xF) == 4); //pixel endcap disk (phase 1)
-                         break;}
+             break;}
+        case 23:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 1) ) &&   // TID Ring 1
+                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 1) );
+             break;}
+        case 24:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 2) ) &&   // TID Ring 2
+                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) );
+             break;}
+        case 25:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 3) ) && //TID Ring 3
+                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 3) );
+             break;}
+        case 26:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 1) && // TEC Ring 1
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 1); 
+            break;}
+        case 27:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 2) && // TEC Ring 2
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 2);
+             break;}
+        case 28:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 3) && // TEC Ring 3
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 3);
 
+             break;}
+        case 29:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 4) && // TEC Ring 4
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 4);
+             break;}
+        case 30:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 5) && // TEC Ring 5
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 5);
+             break;}
+        case 31:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 6) && // TEC Ring 6
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 6);
+             break;}
+        case 32:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 7) && // TEC Ring 7
+                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 7);
+             break;}
 	}
 
 	return OutputBool;
