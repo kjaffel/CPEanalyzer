@@ -35,6 +35,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 TrackDXString = "trackDX_OverPitch";
                                 TrackDXEString = "trackDXE_OverPitch";
                                 CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                                suffix = "  (pitch unit)";
 				break;
 
         		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO.root"; 
@@ -45,6 +46,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 				TrackDXString = "trackDX";
 				TrackDXEString = "trackDXE"; 
                 CPEEstimatedString = "StripErrorSquared1";
+                suffix = "  (cm unit)";
 				break;
 
         		default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
@@ -61,6 +63,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 TrackDXString = "trackDX_OverPitch";
                                 TrackDXEString = "trackDXE_OverPitch";
                                 CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                                suffix = "  (pitch unit)";
                                 break;
 
                         case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO_UL.root"; 
@@ -71,6 +74,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
                                 TrackDXString = "trackDX";
                                 TrackDXEString = "trackDXE"; 
                                 CPEEstimatedString = "StripErrorSquared1";
+                                suffix = "  (cm unit)";
                                 break;
 
                         default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
@@ -124,7 +128,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   else if (region == "TEC_R5"){RegionInt = 30;}
   else if (region == "TEC_R6"){RegionInt = 31;}
   else if (region == "TEC_R7"){RegionInt = 32;}
-  else{std::cout << "Error: The tracker region " << region << " was chosen. Please choose a region out of: TIB L1, TIB L2, TIB L3, TIB L4, Side TID, Wheel TID, Ring TID, TOB L1, TOB L2, TOB L3, TOB L4, TOB L5, TOB L6, Side TEC, Wheel TEC or Ring TEC." << std::endl; return 0;}
+  else{std::cout << "Error: The tracker region " << region << " was chosen. Please choose a region out of: TIB L1, TIB L2, TIB L3, TIB L4, Side TID, Wheel TID, Ring TID, TOB L1, TOB L2, TOB L3, TOB L4, TOB L5, TOB L6, Side TEC, Wheel TEC, Ring TEC, TID_R1, TID_R2, TID_R3, TEC_R1, TEC_R2, TEC_R3, TEC_R4, TEC_R5, TEC_R6 or TEC_R7" << std::endl; return 0;}
 
 
 
@@ -236,10 +240,17 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
   }};
 
-  //Function for expressing the hit resolution in either micrometres or pitch units.
+  //Function for expressing the hit resolution in either centimeters or pitch units.
   auto Pitch_Function{[&Unit_Int](const float& pitch, const float& input){
 
 	float InputOverPitch = input/pitch;
+  	return InputOverPitch;
+
+  }};
+  
+  auto Pitch_Function_ext{[&Unit_Int](const float& pitch, const float& input){
+
+	float InputOverPitch = input*1;
   	return InputOverPitch;
 
   }};
@@ -248,9 +259,9 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto dataframe = d.Define("hitDX_OverPitch", Pitch_Function, {"pitch1", "hitDX"})
 	 	    .Define("trackDX_OverPitch", Pitch_Function, {"pitch1", "trackDX"})
 		    .Define("trackDXE_OverPitch", Pitch_Function, {"pitch1", "trackDXE"})
-		    .Define("StripErrorSquared1_OverPitch", Pitch_Function, {"pitch1", "StripErrorSquared1"})
+		    .Define("StripErrorSquared1_OverPitch", Pitch_Function_ext, {"pitch1", "StripErrorSquared1"})
 		    .Filter(SubDet_Function, {"detID1", "detID2"}, "Subdetector filter");
-
+  
   //Implementing selection criteria that were not implemented in HitResol.cc
   auto PairPathCriteriaFunction{[&RegionInt](const float& pairPath_input){
 
@@ -282,7 +293,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto HistoName_TrackDXE = "TrackDXE_" + region;
   auto HistoName_CPEEstimated = "CPEEstimated_" + region;
 
-  auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.025, 0.025}, HistoName_DoubleDiff); 
+  auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.5, 0.5}, HistoName_DoubleDiff); 
   auto h_hitDX = dataframe_filtered.Define(HistoName_HitDX, HitDXString).Histo1D(HistoName_HitDX);
   auto h_trackDX = dataframe_filtered.Define(HistoName_TrackDX, TrackDXString).Histo1D(HistoName_TrackDX);
   auto h_trackDXE = dataframe_filtered.Define(HistoName_TrackDXE, TrackDXEString).Histo1D(HistoName_TrackDXE);
@@ -326,14 +337,6 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   HitResolutionVector.push_back(HitResolution);
 
   //Printing the resolution 
-  suffix = "";
-  switch(Unit_Int){
-    case 0: suffix = "  (pitch unit)";
-    break;
-    case 1: suffix = "  (cm unit)";
-    break;
-  }
-
   std::cout << "Hit resolution for tracker region " << region << ":  "<< HitResolution << suffix << std::endl;
   std::cout << "Strip CPE parametrisation for tracker region " << region << ":  "<< sigma2_estimated << suffix << std::endl;
   //std::cout << '\n' << std::endl;
@@ -374,23 +377,22 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
 
   }
  
-  switch (DOESEXIST){
-      case true:{ string cmd = "mv ";
-        /* Directory exists. */
-        std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
-        cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-        std::cout << "cmd :" << cmd << std::endl; 
-        // Convert string to const char * as system requires
-        // parameter of type const char *
-        const char *command = cmd.c_str();
-        system(command);
-      break;}
-      case false:{ string cmd = "mkdir ";
-        /* Directory does not exist. */
-        cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-        std::cout << "cmd :" << cmd << std::endl; 
-        const char *command = cmd.c_str();
-        system(command);
-      break;}
-  }
+  if (DOESEXIST){
+    /* Directory exists. */
+    string cmd = "mv ";
+    std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
+    cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+    std::cout << "cmd :" << cmd << std::endl; 
+    // Convert string to const char * as system requires
+    // parameter of type const char *
+    const char *command = cmd.c_str();
+    system(command);} 
+  else{ 
+    /* Directory does not exist. */
+    string cmd = "mkdir ";
+    cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+    std::cout << "cmd :" << cmd << std::endl; 
+    const char *command = cmd.c_str();
+    system(command);
+    }
 }

@@ -13,7 +13,7 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 ### initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.categories.append('HitEff')
+#process.MessageLogger.categories.append('HitEff')
 process.MessageLogger.cerr.INFO = cms.untracked.PSet(
                 limit = cms.untracked.int32(-1)
                         )
@@ -35,6 +35,8 @@ process.source = cms.Source("PoolSource", fileNames=fileNames)
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
+# https://cmssdt.cern.ch/lxr/source/RecoLocalTracker/SiStripRecHitConverter/python/StripCPEfromTrackAngle_cfi.py?v=CMSSW_11_2_1&%21v=CMSSW_11_2_1
+#  useLegacyError= False , maxChgOneMIP = 6000.
 process.load("RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi")
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 

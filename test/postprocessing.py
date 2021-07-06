@@ -95,7 +95,7 @@ def FINALIZE_JOBS(workdir='', finalize=False):
                         logger.error("Not all jobs for {} produced an output ({:d}/{:d} found), task cannot finalize".format(tsk.name, len(outFiles), nExpected))
                         aProblem = True
                     else:
-                        haddCmd = ["hadd", "-f", os.path.join(resultsdir, "{}.root".format(tsk.name))]+outFiles # BUG FIXME 
+                        haddCmd = ["hadd", "-f", os.path.join(resultsdir, "{}.root".format(tsk.name))]+outFiles 
                         try:
                             logger.debug("Merging outputs for sample {0} with {1}".format(tsk.name, " ".join(haddCmd)))
                             subprocess.check_call(haddCmd)#, stdout=subprocess.DEVNULL) 
@@ -110,16 +110,18 @@ def FINALIZE_JOBS(workdir='', finalize=False):
 
 def RUN_PLOTTER(workdir=None):
     ROOT.gROOT.ProcessLine(".L ../macros/Resolutions.cc")
-    units = {'cm': 1}#, 'pitch':0 } 
+    units = {'pitch':0 }#, 'cm':1} 
     compaigns = {'PreLegacy':0}#, 'ULegacy':1}
     for k1 in compaigns.keys():
         for idx, k2 in enumerate(units.keys()):
-            dircreated = (True if idx==1 else(False)) 
+            dircreated = False 
             for rootfile in glob.glob(os.path.join(workdir, 'outputs','*.root')): 
                 rootpath = rootfile.replace('.root', '')
                 try:
                     logger.debug("Resolution from 1D gaussian fit for {} compaign in {} units :".format(k1, k2) )
+                    logger.debug(" for file : {}".format( rootfile))
                     ROOT.Resolutions(units[k2], compaigns[k1], rootfile, rootpath, dircreated)
+                    dircreated = True
                 except subprocess.CalledProcessError:
                     logger.error("Failed to run .L ../macros/Resolutions.cc with : {0}".format(" ".join(rootfile)))
 

@@ -99,7 +99,7 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
     data = collections.defaultdict(dict)
     
     with open(analysisCfgs,"r") as file:
-        ymlConfiguration = yaml.load(file, Loader=yaml.FullLoader)
+        ymlConfiguration = yaml.load(file)
 
     for smp, cfg in ymlConfiguration["samples"].items():
         if not smp.startswith("SiStripCalZeroBias_") and not smp.startswith("SiStripCalCosmics_") and not smp.startswith("SiStripCalMinBias_"):
@@ -112,7 +112,7 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             outputdir_Persmp = os.path.join(stageoutDir, "outputs", "%s"%smp)
             if not os.path.exists(outputdir_Persmp):
                 os.makedirs(outputdir_Persmp)
-            filesParams_persmp.append([cfg["db"], os.path.join(outputdir_Persmp, "output_1.root"), task, "--sample=%s"%outputdir_Persmp])
+            filesParams_persmp.append([cfg["db"], os.path.join(outputdir_Persmp, "output_0.root"), task, "--sample=%s"%outputdir_Persmp])
         else:
             try: # to find files on T2 
                 files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
