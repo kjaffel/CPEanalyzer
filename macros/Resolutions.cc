@@ -15,6 +15,7 @@ vector<float> CPEEstimatedVector;
 
 std::string HitResoFileName;
 std::string GaussianFitsFileName;
+std::string suffix;
 
 void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString){
 
@@ -81,6 +82,13 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
   //opening the root file
   ROOT::RDataFrame d("anResol/reso", InputFileString);
+  
+  auto df = d.Define("partition", "(detID1>>25)&0x7").Filter("((detID2>>25)&0x7) == partition"); 
+    // should let all pairs pass, they're in the same layer by definition;
+  auto df_tib = df.Filter("partition == 3").Define("layer", "(detID1>>14)&0x7");
+  auto df_tid = df.Filter("partition == 4").Define("side", "(detID1>>13)&0x3").Define("disk", "(detID1>>11)&0x3").Define("ring", "(detID1>>9)&0x3");
+  auto df_tob = df.Filter("partition == 5").Define("layer", "(detID1>>14)&0x7");
+  auto df_tec = df.Filter("partition == 6").Define("side", "(detID1>>18)&0x3").Define("wheel", "(detID1>>14)&0xF").Define("ring", "(detID1>>5)&0x7");
 
   int RegionInt = 0;
 
@@ -202,36 +210,25 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
              break;}
 		case 22: {OutputBool = (((detID1_input>>18)&0xF) == 4) && (((detID2_input>>18)&0xF) == 4); //pixel endcap disk (phase 1)
              break;}
-        case 23:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 1) ) &&   // TID Ring 1
-                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 1) );
+        case 23:{OutputBool =( (((detID1_input>>9)&0x3) == 1) && (((detID2_input>>9)&0x3) == 1) );  // TID Ring 1
              break;}
-        case 24:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 2) ) &&   // TID Ring 2
-                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) );
+        case 24:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 2) );   // TID Ring 2
              break;}
-        case 25:{OutputBool =( (((detID1_input>>9)&0x3) == 2) && (((detID1_input>>9)&0x3) == 3) ) && //TID Ring 3
-                             ( (((detID2_input>>9)&0x3) == 2) && (((detID2_input>>9)&0x3) == 3) );
+        case 25:{OutputBool =( (((detID1_input>>9)&0x3) == 3) && (((detID2_input>>9)&0x3) == 3) ); //TID Ring 3
              break;}
-        case 26:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 1) && // TEC Ring 1
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 1); 
+        case 26:{OutputBool =(((detID1_input>>5)&0x7) == 1)  && (((detID2_input>>5)&0x7) == 1); // TEC Ring 1
             break;}
-        case 27:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 2) && // TEC Ring 2
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 2);
+        case 27:{OutputBool =(((detID1_input>>5)&0x7) == 2)  && (((detID2_input>>5)&0x7) == 2); // TEC Ring 2
              break;}
-        case 28:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 3) && // TEC Ring 3
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 3);
-
+        case 28:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 3); // TEC Ring 3
              break;}
-        case 29:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 4) && // TEC Ring 4
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 4);
+        case 29:{OutputBool =(((detID1_input>>5)&0x7) == 4)  && (((detID2_input>>5)&0x7) == 4); // TEC Ring 4
              break;}
-        case 30:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 5) && // TEC Ring 5
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 5);
+        case 30:{OutputBool =(((detID1_input>>5)&0x7) == 5)  && (((detID2_input>>5)&0x7) == 5); // TEC Ring 5
              break;}
-        case 31:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 6) && // TEC Ring 6
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 6);
+        case 31:{OutputBool =(((detID1_input>>5)&0x7) == 6)  && (((detID2_input>>5)&0x7) == 6); // TEC Ring 6
              break;}
-        case 32:{OutputBool =(((detID1_input>>5)&0x7) == 3)  && (((detID1_input>>5)&0x7) == 7) && // TEC Ring 7
-                             (((detID2_input>>5)&0x7) == 3)  && (((detID2_input>>5)&0x7) == 7);
+        case 32:{OutputBool =(((detID1_input>>5)&0x7) == 7)  && (((detID2_input>>5)&0x7) == 7); // TEC Ring 7
              break;}
 	}
 
@@ -329,8 +326,16 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   HitResolutionVector.push_back(HitResolution);
 
   //Printing the resolution 
-  std::cout << "The hit resolution for tracker region " << region << " is: " << HitResolution << std::endl;
-  std::cout << "CPE -estimated for tracker region " << region << " is: " << sigma2_estimated << std::endl;
+  suffix = "";
+  switch(Unit_Int){
+    case 0: suffix = "  (pitch unit)";
+    break;
+    case 1: suffix = "  (cm unit)";
+    break;
+  }
+
+  std::cout << "Hit resolution for tracker region " << region << ":  "<< HitResolution << suffix << std::endl;
+  std::cout << "Strip CPE parametrisation for tracker region " << region << ":  "<< sigma2_estimated << suffix << std::endl;
   //std::cout << '\n' << std::endl;
 
   //Cut flow report
@@ -347,12 +352,14 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
 void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileString, const string& InputFilePath, const bool& DOESEXIST){
 
-  vector<std::string> LayerNames = {"TIB_L1",       "TIB_L2",           "TIB_L3",    "TIB_L4",
-				    "Side_TID",     "Wheel_TID",        "Ring_TID",   "TOB_L1",
-				    "TOB_L2",       "TOB_L3",           "TOB_L4",     "TOB_L5",
-				    "TOB_L6",       "Side_TEC",         "Wheel_TEC",  "Ring_TEC", 
-				    "TIB_All",      "TOB_All",          "TID_All",    "TEC_All",
-				    "Pixel_Barrel", "Pixel_EndcapDisk"};
+  vector<std::string> LayerNames = {"TIB_L1",   "TIB_L2",   "TIB_L3",   "TIB_L4",
+				                    "Side_TID", "Wheel_TID","Ring_TID", 
+                                    "TOB_L1",   "TOB_L2",   "TOB_L3",   "TOB_L4",  "TOB_L5",  "TOB_L6",   
+                                    "Side_TEC", "Wheel_TEC","Ring_TEC", 
+				                    "TIB_All",  "TOB_All",  "TID_All",  "TEC_All",
+				                    "Pixel_Barrel", "Pixel_EndcapDisk",
+                                    "TID_R1",   "TID_R2",   "TID_R3", 
+                                    "TEC_R1",   "TEC_R2",   "TEC_R3",   "TEC_R4",   "TEC_R5",   "TEC_R6",   "TEC_R7"};
 
 
   for(int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString);}
@@ -367,22 +374,23 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
 
   }
  
-  if (DOESEXIST==true) {
-      /* Directory exists. */
-      std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
-      string cmd = "mv ";
-      cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-      std::cout << "cmd :" << cmd << std::endl; 
-      // Convert string to const char * as system requires
-      // parameter of type const char *
-      const char *command = cmd.c_str();
-      system(command);
-  } else {
-      /* Directory does not exist. */
-      string cmd = "mkdir ";
-      cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-      std::cout << "cmd :" << cmd << std::endl; 
-      const char *command = cmd.c_str();
-      system(command);
-  } 
+  switch (DOESEXIST){
+      case true:{ string cmd = "mv ";
+        /* Directory exists. */
+        std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
+        cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+        std::cout << "cmd :" << cmd << std::endl; 
+        // Convert string to const char * as system requires
+        // parameter of type const char *
+        const char *command = cmd.c_str();
+        system(command);
+      break;}
+      case false:{ string cmd = "mkdir ";
+        /* Directory does not exist. */
+        cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+        std::cout << "cmd :" << cmd << std::endl; 
+        const char *command = cmd.c_str();
+        system(command);
+      break;}
+  }
 }
