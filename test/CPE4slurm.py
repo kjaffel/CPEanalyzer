@@ -115,7 +115,10 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
             filesParams_persmp.append([cfg["db"], os.path.join(outputdir_Persmp, "output_0.root"), task, "--sample=%s"%outputdir_Persmp])
         else:
             try: # to find files on T2 
-                files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
+                if cfg["type"] =="data":
+                    files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*/', '*/', '*/', '*.root'))
+                else:
+                    files = glob.glob(os.path.join('/storage/data/cms/'+cfg["db"], '*/', '*.root'))
                 files_ =[file.replace('/storage/data/cms/','') for file in files]
             except Exception as ex:
                 logger.exception("{} root files not found locally ** ".format( files))
