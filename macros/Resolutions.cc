@@ -251,7 +251,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto Pitch_Function_ext{[&Unit_Int](const float& pitch, const float& input){
 
 	float InputOverPitch = input*1;
-  	return InputOverPitch;
+    return InputOverPitch;
 
   }};
 
@@ -259,7 +259,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto dataframe = d.Define("hitDX_OverPitch", Pitch_Function, {"pitch1", "hitDX"})
 	 	    .Define("trackDX_OverPitch", Pitch_Function, {"pitch1", "trackDX"})
 		    .Define("trackDXE_OverPitch", Pitch_Function, {"pitch1", "trackDXE"})
-		    .Define("StripErrorSquared1_OverPitch", Pitch_Function_ext, {"pitch1", "StripErrorSquared1"})
+		    .Define("StripErrorSquared1_OverPitch", Pitch_Function, {"pitch1", "StripErrorSquared1"})
 		    .Filter(SubDet_Function, {"detID1", "detID2"}, "Subdetector filter");
   
   //Implementing selection criteria that were not implemented in HitResol.cc
@@ -370,10 +370,10 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
   HitResoTextFile.open(HitResoFileName);
   auto Width = 28;
 
-  HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::endl;
+  HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::setw(Width) << " CPE current parametrisation "<< std::endl;
 
   for(int i = 0; i < HitResolutionVector.size(); i++){
-	HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::endl;
+	HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::setw(Width) << CPEEstimatedVector.at(i) << std::endl;
 
   }
  
