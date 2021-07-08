@@ -24,6 +24,10 @@ In order to allow parallelisation and fast iterations, a private skim of files i
 ```python
 python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 ```
+Hadd root files and launch plotting script ``macros/Resolutions.cc``
+```python
+python postprocessing.py --workdir mytestDIR
+```
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
 - ``--task``   :  skim/hitresolution 
@@ -47,7 +51,11 @@ Hit pairs are selected by requiring:
 - Predicted path (distance of propagation from one surface to the next) < 7 cm; i.e. only pairs within the same layer are allowed;
 - Error on predicted distance in the bending coordinate between the two hits < 25 microns 
 
-## Plotting:
+## Useful Plotting macros:
+``macros/PlottingToOls/CPEplotter.py`` is the main script used for plotting the saved resolution values in ``workdir/outputs/sample_Name/HitResolutionValues/HitResolutionValues_*.txt`` after postprocessing.
+```python
+python CPEplotter.py --path to__mytestDIR
+```
 ```
 $  root ../data/tracking_ntuple.root 
 root [0] 
