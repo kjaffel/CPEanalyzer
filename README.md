@@ -24,14 +24,14 @@ In order to allow parallelisation and fast iterations, a private skim of files i
 ```python
 python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 ```
-Hadd root files and launch plotting script ``macros/Resolutions.cc``
-```python
-python postprocessing.py --workdir mytestDIR
-```
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
 - ``--task``   :  skim/hitresolution 
 - ``--isTest`` :  will pass one root file on slurm as cross-check
+Hadd root files and launch plotting script ``macros/Resolutions.cc``
+```python
+python postprocessing.py --workdir mytestDIR
+```
 ## Event, Track and Hit Selections:
 The strip hit resolution is computed by using hits in overlapping modules of the same layer (["Pair Method"](https://indico.cern.ch/event/305395/contributions/701396/attachments/580300/798934/nmccoll_3_13_RecHitRes.pdf)).
 

@@ -17,7 +17,8 @@ std::string HitResoFileName;
 std::string GaussianFitsFileName;
 std::string suffix;
 
-void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString){
+
+void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString, const string& cluster_width){
 
   std::string CutFlowReportString;
   std::string DoubleDiffString;
@@ -27,26 +28,26 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   std::string CPEEstimatedString;
   switch(UL){
 	case 0: switch(Unit_Int){
-        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_ALCARECO.root"; 
-				HitResoFileName = "HitResolutionValues_PitchUnits_ALCARECO.txt";
-				CutFlowReportString = "CutFlowReport_" + region + "_PitchUnits_ALCARECO.txt";
-				DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
-                                HitDXString = "hitDX_OverPitch";
-                                TrackDXString = "trackDX_OverPitch";
-                                TrackDXEString = "trackDXE_OverPitch";
-                                CPEEstimatedString = "StripErrorSquared1_OverPitch";
-                                suffix = "  (pitch unit)";
+        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_clusterW" + cluster_width + "_ALCARECO.root"; 
+                        HitResoFileName = "HitResolutionValues_clusterW" + cluster_width + "_" + "PitchUnits_ALCARECO.txt";
+                        CutFlowReportString = "CutFlowReport_" + region + "_clusterW" + cluster_width + "_PitchUnits_ALCARECO.txt";
+                        DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
+                        HitDXString = "hitDX_OverPitch";
+                        TrackDXString = "trackDX_OverPitch";
+                        TrackDXEString = "trackDXE_OverPitch";
+                        CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                        suffix = "  (pitch unit)";
 				break;
 
-        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO.root"; 
-				HitResoFileName = "HitResolutionValues_Centimetres_ALCARECO.txt";
-				CutFlowReportString = "CutFlowReport_" + region + "_Centimetres_ALCARECO.txt";
-				DoubleDiffString = "hitDX-trackDX";
-				HitDXString = "hitDX";
-				TrackDXString = "trackDX";
-				TrackDXEString = "trackDXE"; 
-                CPEEstimatedString = "StripErrorSquared1";
-                suffix = "  (cm unit)";
+        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_clusterW" + cluster_width + "_ALCARECO.root"; 
+                        HitResoFileName = "HitResolutionValues_clusterW" + cluster_width + "_" + "Centimetres_ALCARECO.txt";
+                        CutFlowReportString = "CutFlowReport_" + region + "_clusterW" + cluster_width + "_Centimetres_ALCARECO.txt";
+                        DoubleDiffString = "hitDX-trackDX";
+                        HitDXString = "hitDX";
+                        TrackDXString = "trackDX";
+                        TrackDXEString = "trackDXE"; 
+                        CPEEstimatedString = "StripErrorSquared1";
+                        suffix = "  (cm unit)";
 				break;
 
         		default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
@@ -55,30 +56,30 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 		break;
 
 	case 1: switch(Unit_Int){
-                        case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_ALCARECO_UL.root"; 
-                                HitResoFileName = "HitResolutionValues_PitchUnits_ALCARECO_UL.txt"; 
-				CutFlowReportString = "CutFlowReport_" + region + "_PitchUnits_ALCARECO_UL.txt";
-				DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
-                                HitDXString = "hitDX_OverPitch";
-                                TrackDXString = "trackDX_OverPitch";
-                                TrackDXEString = "trackDXE_OverPitch";
-                                CPEEstimatedString = "StripErrorSquared1_OverPitch";
-                                suffix = "  (pitch unit)";
-                                break;
+        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_clusterW" + cluster_width + "_ALCARECO_UL.root"; 
+                        HitResoFileName = "HitResolutionValues_" + cluster_width + "_" + "PitchUnits_ALCARECO_UL.txt";
+                        CutFlowReportString = "CutFlowReport_" + region + "_" + cluster_width + "_PitchUnits_ALCARECO_UL.txt";
+                        DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
+                        HitDXString = "hitDX_OverPitch";
+                        TrackDXString = "trackDX_OverPitch";
+                        TrackDXEString = "trackDXE_OverPitch";
+                        CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                        suffix = "  (pitch unit)";
+                break;
 
-                        case 1: GaussianFitsFileName = "GaussianFits_Centimetres_ALCARECO_UL.root"; 
-                                HitResoFileName = "HitResolutionValues_Centimetres_ALCARECO_UL.txt";
-				CutFlowReportString = "CutFlowReport_" + region + "_Centimetres_ALCARECO_UL.txt";
-				DoubleDiffString = "hitDX-trackDX";
-                                HitDXString = "hitDX";
-                                TrackDXString = "trackDX";
-                                TrackDXEString = "trackDXE"; 
-                                CPEEstimatedString = "StripErrorSquared1";
-                                suffix = "  (cm unit)";
-                                break;
+        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_clusterW" + cluster_width + "_ALCARECO_UL.root"; 
+				        HitResoFileName = "HitResolutionValues_" + cluster_width + "_" + "Centimetres_ALCARECO_UL.txt";
+                        CutFlowReportString = "CutFlowReport_" + region + "_" + cluster_width + "_Centimetres_ALCARECO_UL.txt";
+                        DoubleDiffString = "hitDX-trackDX";
+                        HitDXString = "hitDX";
+                        TrackDXString = "trackDX";
+                        TrackDXEString = "trackDXE"; 
+                        CPEEstimatedString = "StripErrorSquared1";
+                        suffix = "  (cm unit)";
+                break;
 
-                        default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
-                }
+                default: std::cout << "ERROR: UnitInt must be 0 or 1." << std::endl; break;
+        }
 
 		break;
 	default: std::cout << "The UL input parameter must be set to 0 (for ALCARECO) or 1 (for UL ALCARECO)." << std::endl; break;
@@ -276,22 +277,30 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 	else{return momentum_input > 3;} //strips
   }};
 
-  auto dataframe_filtered = dataframe.Filter(PairPathCriteriaFunction, {"pairPath"}, "Pair path criterion filter")
+  auto dataframe_filtered_ = dataframe.Filter(PairPathCriteriaFunction, {"pairPath"}, "Pair path criterion filter")
 				     .Filter(MomentaFunction, {"momentum"}, "Momentum criterion filter")
 			         .Filter("trackChi2 >= 0.001", "chi2 criterion filter")
 				     .Filter("numHits >= 6", "numHits filter")
-				     .Filter("trackDXE < 0.0025", "trackDXE filter")
-				     .Filter("(clusterW1 == clusterW2) && clusterW1 <= 4 && clusterW2 <= 4", "cluster filter");
+				     .Filter("trackDXE < 0.0025", "trackDXE filter");
+				     //.Filter("(clusterW1 == clusterW2) && clusterW1 <= 4 && clusterW2 <= 4", "cluster filter");
+  // cluster width in number of strips 
+  string cluster_cut= "";
+  if(cluster_width =="1"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 1 && clusterW2 == 1";}
+  else if(cluster_width =="2"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 2 && clusterW2 == 2";}
+  else if(cluster_width =="3"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 3 && clusterW2 == 3";}
+  else if(cluster_width =="4"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 4 && clusterW2 == 4";}
+  else {cluster_cut = "(clusterW1 == clusterW2) && clusterW1 > 4 && clusterW2 > 4";}
 
+  auto dataframe_filtered = dataframe_filtered_.Filter(cluster_cut, "cluster filter");
   //Creating histograms for the difference between the two hit positions, the difference between the two predicted positions and for the double difference
   //hitDX = the difference in the hit positions for the pair
   //trackDX =  the difference in the track positions for the pair 
 
-  auto HistoName_DoubleDiff = "DoubleDifference_" + region;
-  auto HistoName_HitDX = "HitDX_" + region;
-  auto HistoName_TrackDX = "TrackDX_" + region; 
-  auto HistoName_TrackDXE = "TrackDXE_" + region;
-  auto HistoName_CPEEstimated = "CPEEstimated_" + region;
+  auto HistoName_DoubleDiff = "DoubleDifference_" + region + "_clusterW" + cluster_width ;
+  auto HistoName_HitDX = "HitDX_" + region + "_clusterW" + cluster_width ;
+  auto HistoName_TrackDX = "TrackDX_" + region + "_clusterW" + cluster_width ; 
+  auto HistoName_TrackDXE = "TrackDXE_" + region + "_clusterW" + cluster_width ;
+  auto HistoName_CPEEstimated = "CPEEstimated_" + region + "_clusterW" + cluster_width ;
 
   auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.5, 0.5}, HistoName_DoubleDiff); 
   auto h_hitDX = dataframe_filtered.Define(HistoName_HitDX, HitDXString).Histo1D(HistoName_HitDX);
@@ -337,8 +346,9 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   HitResolutionVector.push_back(HitResolution);
 
   //Printing the resolution 
-  std::cout << "Hit resolution for tracker region " << region << ":  "<< HitResolution << suffix << std::endl;
-  std::cout << "Strip CPE parametrisation for tracker region " << region << ":  "<< sigma2_estimated << suffix << std::endl;
+  std::cout << "Hit resolution for tracker region " << region << " and of cluster width " <<  cluster_width << ":  "<< HitResolution << suffix << std::endl;
+  std::cout << "Strip CPE parametrisation for tracker region " << region << " and of cluster width " <<  cluster_width << ":  "<< sigma2_estimated << suffix << std::endl;
+  std::cout << "====================================================================================" << std::endl;
   //std::cout << '\n' << std::endl;
 
   //Cut flow report
@@ -363,36 +373,42 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
 				                    "Pixel_Barrel", "Pixel_EndcapDisk",
                                     "TID_R1",   "TID_R2",   "TID_R3", 
                                     "TEC_R1",   "TEC_R2",   "TEC_R3",   "TEC_R4",   "TEC_R5",   "TEC_R6",   "TEC_R7"};
-
-
-  for(int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString);}
-  std::ofstream HitResoTextFile;
-  HitResoTextFile.open(HitResoFileName);
-  auto Width = 28;
-
-  HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::setw(Width) << " CPE current parametrisation "<< std::endl;
-
-  for(int i = 0; i < HitResolutionVector.size(); i++){
-	HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::setw(Width) << CPEEstimatedVector.at(i) << std::endl;
-
-  }
- 
-  if (DOESEXIST){
-    /* Directory exists. */
-    string cmd = "mv ";
-    std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
-    cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-    std::cout << "cmd :" << cmd << std::endl; 
-    // Convert string to const char * as system requires
-    // parameter of type const char *
-    const char *command = cmd.c_str();
-    system(command);} 
-  else{ 
-    /* Directory does not exist. */
-    string cmd = "mkdir ";
-    cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-    std::cout << "cmd :" << cmd << std::endl; 
-    const char *command = cmd.c_str();
-    system(command);
+  
+  vector<std::string> ClusterWidth = { "1", "2", "3", "4", "5"};
+  for( int j =0; j < ClusterWidth.size(); j++ ){
+    std::cout << "================================================================" << std::endl;
+    std::cout << "  values of 1D Gaussian Fit for Strips with "<< ClusterWidth.at(j) << " cluster size" << std::endl;
+    std::cout << "================================================================" << std::endl;
+    for( int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString, ClusterWidth.at(j));}
+  
+    std::ofstream HitResoTextFile;
+    HitResoTextFile.open(HitResoFileName);
+    auto Width = 28;
+    
+    HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::setw(Width) << " CPE current parametrisation "<< std::endl;
+    
+    for(int i = 0; i < HitResolutionVector.size(); i++){
+        HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::setw(Width) << CPEEstimatedVector.at(i) << std::endl;
+    
+    }
+    
+    if (DOESEXIST){
+        /* Directory exists. */
+        string cmd = "mv ";
+        std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
+        cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+        std::cout << "cmd :" << cmd << std::endl; 
+        // Convert string to const char * as system requires
+        // parameter of type const char *
+        const char *command1 = cmd.c_str();
+        system(command1);} 
+    else{ 
+        /* Directory does not exist. */
+        string cmd = "mkdir ";
+        cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+        std::cout << "cmd :" << cmd << std::endl; 
+        const char *command2 = cmd.c_str();
+        system(command2);
+        }
     }
 }
