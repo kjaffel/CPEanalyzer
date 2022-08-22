@@ -45,15 +45,15 @@ except ImportError:
 # WIP : not sure anymore if I want to use plotIt for CPE
 def update_plotItFiles(data= None, era= None, rootf= None):
     data.update( {"{}:".format(rootf): {
-            "type": "data",
-            "legend": "data",
-            "group": "data",
-            "era": era,
+            "type"   : "data",
+            "legend" : "data",
+            "group"  : "data",
+            "era"    : era,
             } })
     return data
 
 def list_dir(thisDir):
-    subdir =[]
+    subdir = []
     ls_cmd = ["xrdfs", "root://eoscms.cern.ch", "ls", thisDir]
     try :
         subprocess.check_call(ls_cmd, stdout=subprocess.PIPE)
@@ -64,7 +64,7 @@ def list_dir(thisDir):
     return subdir
 
 def mapDir(prefix, directory):
-    thisDir = path.join(prefix, directory)
+    thisDir  = path.join(prefix, directory)
     childMap = {}
     contents = []
     for child in list_dir(thisDir):
@@ -96,10 +96,10 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
     files_ = []
     inputParams = []
     filesParams_persmp = []
-    data = collections.defaultdict(dict)
+    data = collections.defaultdict()
     
     with open(analysisCfgs,"r") as file:
-        ymlConfiguration = yaml.load(file)
+        ymlConfiguration = yaml.load(file, Loader=yaml.FullLoader)
 
     for smp, cfg in ymlConfiguration["samples"].items():
         if not smp.startswith("SiStripCalZeroBias_") and not smp.startswith("SiStripCalCosmics_") and not smp.startswith("SiStripCalMinBias_"):
@@ -151,11 +151,12 @@ def getTasks(task = None, analysisCfgs=None, cmsswDir=None, stageoutDir=None, is
     
     inputParams = filesParams_persmp
     
-    yamlfile = open(os.path.join(stageoutDir, "plotit_files.yml"), "w")
+    yamlfile = open(os.path.join(stageoutDir, "plots.yml"), "w")
     yaml.dump(data, yamlfile)
     yamlfile.close()
     
     return inputParams 
+
 
 def ClusterParameterEstimator_4SLURM(yml=None, outputdir= None, task=None, isTest=False):
     config = Configuration()
@@ -208,7 +209,7 @@ if __name__ == '__main__':
         logger.warning("Output directory {} exists, previous results may be overwritten".format( options.outputdir))
     
     if options.isTest:
-        # 1 data & 1 mc sample 
+        # 1 data & 1 mc root file
         YmlFile ='../configs/alcareco_localtest.yml'
     else:
         YmlFile = options.yml

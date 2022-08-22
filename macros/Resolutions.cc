@@ -9,44 +9,72 @@ using doubles = ROOT::VecOps::RVec<double>;
 vector<float> HitResolutionVector;
 vector<float> DoubleDifferenceVector;
 vector<float> HitDXVector;
+//vector<float> HitDXEVector;
 vector<float> TrackDXVector;
 vector<float> TrackDXEVector;
 vector<float> CPEEstimatedVector;
+vector<float> ResidualResoVector;
 
 std::string HitResoFileName;
 std::string GaussianFitsFileName;
 std::string suffix;
 
 
-void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString, const string& cluster_width){
+void ResolutionsCalculator(const string& region, const int& Unit_Int, const int& UL, const string& InputFileString, const string& cluster_track_width, const string& cluster_cut){
+
 
   std::string CutFlowReportString;
   std::string DoubleDiffString;
   std::string HitDXString;
+  //std::string HitDXEString;
   std::string TrackDXString;
   std::string TrackDXEString;
   std::string CPEEstimatedString;
+  std::string AngleAlphaString;
+  std::string AngleAlpha2String;
+  std::string afpString;
+  std::string afp2String;
+  std::string expectedW1String;
+  std::string expectedW2String;
+  std::string smpResoString;
+
   switch(UL){
 	case 0: switch(Unit_Int){
-        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_clusterW" + cluster_width + "_ALCARECO.root"; 
-                        HitResoFileName = "HitResolutionValues_clusterW" + cluster_width + "_" + "PitchUnits_ALCARECO.txt";
-                        CutFlowReportString = "CutFlowReport_" + region + "_clusterW" + cluster_width + "_PitchUnits_ALCARECO.txt";
+        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits" + cluster_track_width + "_ALCARECO.root"; 
+                        HitResoFileName = "HitResolutionValues" + cluster_track_width + "_PitchUnits_ALCARECO.txt";
+                        CutFlowReportString = "CutFlowReports_" + region + cluster_track_width + "_PitchUnits_ALCARECO.txt";
                         DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
                         HitDXString = "hitDX_OverPitch";
+                        //HitDXEString = "hitDXE_OverPitch";
                         TrackDXString = "trackDX_OverPitch";
                         TrackDXEString = "trackDXE_OverPitch";
                         CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                        AngleAlphaString = "driftAlpha_OverPitch";
+                        AngleAlpha2String = "driftAlpha_2_OverPitch";
+                        afpString  = "N1uProj_OverPitch";
+                        afp2String = "N2uProj_OverPitch";
+                        expectedW1String = "expectedW1_OverPitch";
+                        expectedW2String = "expectedW2_OverPitch";
+                        smpResoString = "simpleRes_OverPitch";
                         suffix = "  (pitch unit)";
 				break;
 
-        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_clusterW" + cluster_width + "_ALCARECO.root"; 
-                        HitResoFileName = "HitResolutionValues_clusterW" + cluster_width + "_" + "Centimetres_ALCARECO.txt";
-                        CutFlowReportString = "CutFlowReport_" + region + "_clusterW" + cluster_width + "_Centimetres_ALCARECO.txt";
+        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres" + cluster_track_width + "_ALCARECO.root"; 
+                        HitResoFileName = "HitResolutionValues" + cluster_track_width + "_Centimetres_ALCARECO.txt";
+                        CutFlowReportString = "CutFlowReports_" + region + cluster_track_width + "_Centimetres_ALCARECO.txt";
                         DoubleDiffString = "hitDX-trackDX";
                         HitDXString = "hitDX";
+                        //HitDXEString = "hitDXE";
                         TrackDXString = "trackDX";
                         TrackDXEString = "trackDXE"; 
                         CPEEstimatedString = "StripErrorSquared1";
+                        AngleAlphaString = "driftAlpha";
+                        AngleAlpha2String = "driftAlpha_2";
+                        afpString = "N1uProj";
+                        afp2String = "N2uProj";
+                        expectedW1String = "expectedW1";
+                        expectedW2String = "expectedW2";
+                        smpResoString = "simpleRes";
                         suffix = "  (cm unit)";
 				break;
 
@@ -56,25 +84,41 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 		break;
 
 	case 1: switch(Unit_Int){
-        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits_clusterW" + cluster_width + "_ALCARECO_UL.root"; 
-                        HitResoFileName = "HitResolutionValues_" + cluster_width + "_" + "PitchUnits_ALCARECO_UL.txt";
-                        CutFlowReportString = "CutFlowReport_" + region + "_" + cluster_width + "_PitchUnits_ALCARECO_UL.txt";
+        		case 0: GaussianFitsFileName = "GaussianFits_PitchUnits" + cluster_track_width + "_ALCARECO_UL.root"; 
+                        HitResoFileName = "HitResolutionValues" + cluster_track_width + "_PitchUnits_ALCARECO_UL.txt";
+                        CutFlowReportString = "CutFlowReports_" + region + cluster_track_width + "_PitchUnits_ALCARECO_UL.txt";
                         DoubleDiffString = "hitDX_OverPitch-trackDX_OverPitch";
                         HitDXString = "hitDX_OverPitch";
+                        //HitDXEString = "hitDXE_OverPitch";
                         TrackDXString = "trackDX_OverPitch";
                         TrackDXEString = "trackDXE_OverPitch";
                         CPEEstimatedString = "StripErrorSquared1_OverPitch";
+                        AngleAlphaString = "driftAlpha_OverPitch";
+                        AngleAlpha2String = "driftAlpha_2_OverPitch";
+                        afpString  = "N1uProj_OverPitch";
+                        afp2String = "N2uProj_OverPitch";
+                        expectedW1String = "expectedW1_OverPitch";
+                        expectedW2String = "expectedW2_OverPitch";
+                        smpResoString = "simpleRes_OverPitch";
                         suffix = "  (pitch unit)";
                 break;
 
-        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres_clusterW" + cluster_width + "_ALCARECO_UL.root"; 
-				        HitResoFileName = "HitResolutionValues_" + cluster_width + "_" + "Centimetres_ALCARECO_UL.txt";
-                        CutFlowReportString = "CutFlowReport_" + region + "_" + cluster_width + "_Centimetres_ALCARECO_UL.txt";
+        		case 1: GaussianFitsFileName = "GaussianFits_Centimetres" + cluster_track_width + "_ALCARECO_UL.root"; 
+				        HitResoFileName = "HitResolutionValues" + cluster_track_width + "_Centimetres_ALCARECO_UL.txt";
+                        CutFlowReportString = "CutFlowReports_" + region + cluster_track_width + "_Centimetres_ALCARECO_UL.txt";
                         DoubleDiffString = "hitDX-trackDX";
                         HitDXString = "hitDX";
+                        //HitDXEString = "hitDXE";
                         TrackDXString = "trackDX";
                         TrackDXEString = "trackDXE"; 
                         CPEEstimatedString = "StripErrorSquared1";
+                        AngleAlphaString = "driftAlpha";
+                        AngleAlpha2String = "driftAlpha_2";
+                        afpString = "N1uProj";
+                        afp2String = "N2uProj";
+                        expectedW1String = "expectedW1";
+                        expectedW2String = "expectedW2";
+                        smpResoString = "simpleRes";
                         suffix = "  (cm unit)";
                 break;
 
@@ -119,16 +163,16 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   else if(region == "TEC_All"){RegionInt = 20;}
   else if(region == "Pixel_Barrel"){RegionInt = 21;}
   else if(region == "Pixel_EndcapDisk"){RegionInt = 22;}
-  else if (region == "TID_R1"){RegionInt = 23;}
-  else if (region == "TID_R2"){RegionInt = 24;}
-  else if (region == "TID_R3"){RegionInt = 25;}
-  else if (region == "TEC_R1"){RegionInt = 26;}
-  else if (region == "TEC_R2"){RegionInt = 27;}
-  else if (region == "TEC_R3"){RegionInt = 28;}
-  else if (region == "TEC_R4"){RegionInt = 29;}
-  else if (region == "TEC_R5"){RegionInt = 30;}
-  else if (region == "TEC_R6"){RegionInt = 31;}
-  else if (region == "TEC_R7"){RegionInt = 32;}
+  else if(region == "TID_R1"){RegionInt = 23;}
+  else if(region == "TID_R2"){RegionInt = 24;}
+  else if(region == "TID_R3"){RegionInt = 25;}
+  else if(region == "TEC_R1"){RegionInt = 26;}
+  else if(region == "TEC_R2"){RegionInt = 27;}
+  else if(region == "TEC_R3"){RegionInt = 28;}
+  else if(region == "TEC_R4"){RegionInt = 29;}
+  else if(region == "TEC_R5"){RegionInt = 30;}
+  else if(region == "TEC_R6"){RegionInt = 31;}
+  else if(region == "TEC_R7"){RegionInt = 32;}
   else{std::cout << "Error: The tracker region " << region << " was chosen. Please choose a region out of: TIB L1, TIB L2, TIB L3, TIB L4, Side TID, Wheel TID, Ring TID, TOB L1, TOB L2, TOB L3, TOB L4, TOB L5, TOB L6, Side TEC, Wheel TEC, Ring TEC, TID_R1, TID_R2, TID_R3, TEC_R1, TEC_R2, TEC_R3, TEC_R4, TEC_R5, TEC_R6 or TEC_R7" << std::endl; return 0;}
 
 
@@ -260,8 +304,15 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto dataframe = d.Define("hitDX_OverPitch", Pitch_Function, {"pitch1", "hitDX"})
 	 	    .Define("trackDX_OverPitch", Pitch_Function, {"pitch1", "trackDX"})
 		    .Define("trackDXE_OverPitch", Pitch_Function, {"pitch1", "trackDXE"})
-		    .Define("StripErrorSquared1_OverPitch", Pitch_Function, {"pitch1", "StripErrorSquared1"})
-		    .Filter(SubDet_Function, {"detID1", "detID2"}, "Subdetector filter");
+		    .Define("StripErrorSquared1_OverPitch", Pitch_Function_ext, {"pitch1", "StripErrorSquared1"})
+		    .Define("driftAlpha_OverPitch", Pitch_Function, {"pitch1", "driftAlpha"})
+		    .Define("driftAlpha_2_OverPitch", Pitch_Function, {"pitch1", "driftAlpha_2"})
+		    .Define("expectedW1_OverPitch", Pitch_Function, {"pitch1", "expectedW1"})
+		    .Define("expectedW2_OverPitch", Pitch_Function, {"pitch1", "expectedW2"})
+		    .Define("simpleRes_OverPitch", Pitch_Function, {"pitch1", "simpleRes"})
+		    .Define("N1uProj_OverPitch", Pitch_Function, {"pitch1", "N1uProj"})
+		    .Define("N2uProj_OverPitch", Pitch_Function, {"pitch1", "N2uProj"});
+		    //.Filter(SubDet_Function, {"detID1", "detID2"}, "Subdetector filter");
   
   //Implementing selection criteria that were not implemented in HitResol.cc
   auto PairPathCriteriaFunction{[&RegionInt](const float& pairPath_input){
@@ -282,58 +333,80 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 			         .Filter("trackChi2 >= 0.001", "chi2 criterion filter")
 				     .Filter("numHits >= 6", "numHits filter")
 				     .Filter("trackDXE < 0.0025", "trackDXE filter");
-				     //.Filter("(clusterW1 == clusterW2) && clusterW1 <= 4 && clusterW2 <= 4", "cluster filter");
+                   //.Filter("(clusterW1 == clusterW2) && clusterW1 <= 4 && clusterW2 <= 4", "cluster filter");
   // cluster width in number of strips 
-  string cluster_cut= "";
-  if(cluster_width =="1"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 1 && clusterW2 == 1";}
-  else if(cluster_width =="2"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 2 && clusterW2 == 2";}
-  else if(cluster_width =="3"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 3 && clusterW2 == 3";}
-  else if(cluster_width =="4"){cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 4 && clusterW2 == 4";}
-  else {cluster_cut = "(clusterW1 == clusterW2) && clusterW1 > 4 && clusterW2 > 4";}
+  //string cluster_cut= "";
+  //cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == 4 && clusterW2 == 4";
+  //cluster_cut = "(clusterW1 == clusterW2) && clusterW1 == "+ cluster_width 
+           //                           + " && clusterW2 == "+ cluster_width
+           //                           + " && expectedW1 <= " + track_width 
+           //                           + " && expectedW2 <= " + track_width ;
 
   auto dataframe_filtered = dataframe_filtered_.Filter(cluster_cut, "cluster filter");
   //Creating histograms for the difference between the two hit positions, the difference between the two predicted positions and for the double difference
-  //hitDX = the difference in the hit positions for the pair
+  //hitDX   = the difference in the hit positions for the pair
   //trackDX =  the difference in the track positions for the pair 
 
-  auto HistoName_DoubleDiff = "DoubleDifference_" + region + "_clusterW" + cluster_width ;
-  auto HistoName_HitDX = "HitDX_" + region + "_clusterW" + cluster_width ;
-  auto HistoName_TrackDX = "TrackDX_" + region + "_clusterW" + cluster_width ; 
-  auto HistoName_TrackDXE = "TrackDXE_" + region + "_clusterW" + cluster_width ;
-  auto HistoName_CPEEstimated = "CPEEstimated_" + region + "_clusterW" + cluster_width ;
+  auto HistoName_DoubleDiff = "DoubleDifference_" + region + cluster_track_width; 
+  auto HistoName_HitDX = "HitDX_" + region + cluster_track_width;//
+  //auto HistoName_HitDXE = "HitDXE_" + region + cluster_track_width;//
+  auto HistoName_TrackDX = "TrackDX_" + region + cluster_track_width; //
+  auto HistoName_TrackDXE = "TrackDXE_" + region + cluster_track_width; //
+  auto HistoName_CPEEstimated = "CPEEstimated_" + region + cluster_track_width; //
+  auto HistoName_Alpha1 = "Alpha1_" + region + cluster_track_width; //
+  auto HistoName_Alpha2 = "Alpha2_" + region + cluster_track_width; //
+  auto HistoName_afp1 = "afp_" + region + cluster_track_width; //
+  auto HistoName_smpReso = "simpleRes_" + region + cluster_track_width; //
+
 
   auto h_DoubleDifference = dataframe_filtered.Define(HistoName_DoubleDiff, DoubleDiffString).Histo1D({HistoName_DoubleDiff.c_str(), HistoName_DoubleDiff.c_str(), 60, -0.5, 0.5}, HistoName_DoubleDiff); 
   auto h_hitDX = dataframe_filtered.Define(HistoName_HitDX, HitDXString).Histo1D(HistoName_HitDX);
+  //auto h_hitDXE = dataframe_filtered.Define(HistoName_HitDXE, HitDXEString).Histo1D(HistoName_HitDXE);
   auto h_trackDX = dataframe_filtered.Define(HistoName_TrackDX, TrackDXString).Histo1D(HistoName_TrackDX);
   auto h_trackDXE = dataframe_filtered.Define(HistoName_TrackDXE, TrackDXEString).Histo1D(HistoName_TrackDXE);
   auto h_cpeEstimated = dataframe_filtered.Define(HistoName_CPEEstimated, CPEEstimatedString).Histo1D(HistoName_CPEEstimated);
+  auto h_alpha1 = dataframe_filtered.Define(HistoName_Alpha1, AngleAlphaString).Histo1D(HistoName_Alpha1);
+  auto h_alpha2 = dataframe_filtered.Define(HistoName_Alpha2, AngleAlpha2String).Histo1D(HistoName_Alpha2);
+  auto h_afp1 = dataframe_filtered.Define(HistoName_afp1, afpString).Histo1D(HistoName_afp1);
+  auto h_smpReso = dataframe_filtered.Define(HistoName_smpReso, smpResoString).Histo1D(HistoName_smpReso);
 
   //Applying gaussian fits, taking the resolutions and squaring them
   h_DoubleDifference->Fit("gaus");
-  
+  //auto fit = h_DoubleDifference->GetFunction("gaus");
+  //auto p0 = fit->GetParameter(0);
+  //auto p1 = fit->GetParameter(1);
+  //auto p2 = fit->GetParameter(2);
+
   auto double_diff_StdDev = h_DoubleDifference->GetStdDev();
   auto hitDX_StdDev = h_hitDX->GetStdDev();
+  //auto hitDXE_Mean = h_trackDXE->GetMean();
   auto trackDX_StdDev = h_trackDX->GetStdDev();
   auto trackDXE_Mean = h_trackDXE->GetMean();
   auto cpeEstimated_squared = h_cpeEstimated->GetMean();
+  auto smpReso_std = h_smpReso->GetStdDev();
   
   auto sigma2_MeasMinusPred = pow(double_diff_StdDev, 2);
   auto sigma2_Meas = pow(hitDX_StdDev, 2);
+  //auto sigma2_MeasError = pow(hitDXE_Mean, 2);
   auto sigma2_Pred = pow(trackDX_StdDev, 2); 
   auto sigma2_PredError = pow(trackDXE_Mean, 2);
   auto sigma2_estimated = sqrt(cpeEstimated_squared);
 
+
   DoubleDifferenceVector.push_back(sigma2_MeasMinusPred);
   HitDXVector.push_back(sigma2_Meas);
+  //HitDXEVector.push_back(sigma2_MeasError);
   TrackDXVector.push_back(sigma2_Pred);
   TrackDXEVector.push_back(sigma2_PredError);
   CPEEstimatedVector.push_back(sigma2_estimated);
+  ResidualResoVector.push_back(smpReso_std);
 
   //Saving the histograms with gaussian fits applied to an output root file
   TFile * output = new TFile(GaussianFitsFileName.c_str(), "UPDATE");
 
   h_DoubleDifference->Write();
   h_hitDX->Write();
+  //h_hitDXE->Write();
   h_trackDX->Write();
   h_trackDXE->Write();
   h_cpeEstimated->Write();
@@ -345,11 +418,10 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
   auto HitResolution = sqrt( numerator/2 );
   HitResolutionVector.push_back(HitResolution);
 
-  //Printing the resolution 
-  std::cout << "Hit resolution for tracker region " << region << " and of cluster width " <<  cluster_width << ":  "<< HitResolution << suffix << std::endl;
-  std::cout << "Strip CPE parametrisation for tracker region " << region << " and of cluster width " <<  cluster_width << ":  "<< sigma2_estimated << suffix << std::endl;
+  //Print out the resolution 
+  std::cout << "Hit resolution for tracker region " << region << " and of " <<  cluster_track_width << ":  "<< HitResolution << suffix << std::endl;
+  std::cout << "Strip CPE parametrisation for tracker region " << region << " and of " <<  cluster_track_width << ":  "<< sigma2_estimated << suffix << std::endl;
   std::cout << "====================================================================================" << std::endl;
-  //std::cout << '\n' << std::endl;
 
   //Cut flow report
   auto allCutsReport = d.Report();
@@ -363,7 +435,7 @@ void ResolutionsCalculator(const string& region, const int& Unit_Int, const int&
 
 }
 
-void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileString, const string& InputFilePath, const bool& DOESEXIST){
+void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileString, const string& InputFilePath, const string& ClusterTrackWidth, const string& cluster_cut, const bool& DOESEXIST){
 
   vector<std::string> LayerNames = {"TIB_L1",   "TIB_L2",   "TIB_L3",   "TIB_L4",
 				                    "Side_TID", "Wheel_TID","Ring_TID", 
@@ -374,41 +446,47 @@ void Resolutions(const int& Unit_Int, const int& UL, const string& InputFileStri
                                     "TID_R1",   "TID_R2",   "TID_R3", 
                                     "TEC_R1",   "TEC_R2",   "TEC_R3",   "TEC_R4",   "TEC_R5",   "TEC_R6",   "TEC_R7"};
   
-  vector<std::string> ClusterWidth = { "1", "2", "3", "4", "5"};
-  for( int j =0; j < ClusterWidth.size(); j++ ){
-    std::cout << "================================================================" << std::endl;
-    std::cout << "  values of 1D Gaussian Fit for Strips with "<< ClusterWidth.at(j) << " cluster size" << std::endl;
-    std::cout << "================================================================" << std::endl;
-    for( int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString, ClusterWidth.at(j));}
+  DoubleDifferenceVector.clear();
+  HitDXVector.clear();
+  //HitDXEVector.clear();
+  TrackDXVector.clear();
+  TrackDXEVector.clear();
+  CPEEstimatedVector.clear();
+  ResidualResoVector.clear();
+  HitResolutionVector.clear();
+
+  std::cout << "================================================================" << std::endl;
+  std::cout << "  values of 1D Gaussian Fit for Strips with "<< ClusterTrackWidth  << std::endl;
+  std::cout << "================================================================" << std::endl;
+  for( int i = 0; i < LayerNames.size(); i++){ResolutionsCalculator(LayerNames.at(i), Unit_Int, UL, InputFileString, ClusterTrackWidth, cluster_cut);}
   
-    std::ofstream HitResoTextFile;
-    HitResoTextFile.open(HitResoFileName);
-    auto Width = 28;
+  std::ofstream HitResoTextFile;
+  HitResoTextFile.open(HitResoFileName);
+  auto Width = 28;
     
-    HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::setw(Width) << " CPE current parametrisation "<< std::endl;
+  HitResoTextFile << std::right << "Layer " << std::setw(Width) << " Resolution " << std::setw(Width) << " sigma2_HitDX " << std::setw(Width) << " sigma2_trackDX " << std::setw(Width) << " sigma2_trackDXE " << std::setw(Width) << " sigma2_DoubleDifference " << std::setw(Width) << " CPE current parametrisation "<< 
+      std::setw(Width) << "residua_reso" << std::endl;
     
-    for(int i = 0; i < HitResolutionVector.size(); i++){
-        HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i)  << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::setw(Width) << CPEEstimatedVector.at(i) << std::endl;
+  for(int i = 0; i < HitResolutionVector.size(); i++){
+    HitResoTextFile << std::right << LayerNames.at(i) << std::setw(Width) << HitResolutionVector.at(i) << std::setw(Width) << HitDXVector.at(i) << std::setw(Width) << TrackDXVector.at(i) << std::setw(Width) << TrackDXEVector.at(i) << std::setw(Width) << DoubleDifferenceVector.at(i) << std::setw(Width) << CPEEstimatedVector.at(i) << std::setw(Width) << ResidualResoVector.at(i) << std::endl;
+  }
     
-    }
-    
-    if (DOESEXIST){
-        /* Directory exists. */
-        string cmd = "mv ";
-        std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
-        cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-        std::cout << "cmd :" << cmd << std::endl; 
-        // Convert string to const char * as system requires
-        // parameter of type const char *
-        const char *command1 = cmd.c_str();
-        system(command1);} 
-    else{ 
-        /* Directory does not exist. */
-        string cmd = "mkdir ";
-        cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
-        std::cout << "cmd :" << cmd << std::endl; 
-        const char *command2 = cmd.c_str();
-        system(command2);
-        }
-    }
+   // if (DOESEXIST){
+   //     /* Directory exists. */
+   //     string cmd = "mv ";
+   //     std::cout << " /HitResolutionValues, /GaussianFits , /CutFlowReports exists ! " << std::endl;
+   //     cmd = cmd + "CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+   //     std::cout << "cmd :" << cmd << std::endl; 
+   //     // Convert string to const char * as system requires
+   //     // parameter of type const char *
+   //     const char *command1 = cmd.c_str();
+   //     system(command1);} 
+   // else{ 
+   //     /* Directory does not exist. */
+   //     string cmd = "mkdir ";
+   //     cmd = cmd + InputFilePath +"/HitResolutionValues; mkdir " + InputFilePath+ "/GaussianFits; mkdir "+ InputFilePath +"/CutFlowReports; mv CutFlowReport_* "+InputFilePath +"/CutFlowReports/; mv HitResolutionValues_* "+ InputFilePath + "/HitResolutionValues/; mv GaussianFits_* "+ InputFilePath +"/GaussianFits/;";
+   //     std::cout << "cmd :" << cmd << std::endl; 
+   //     const char *command2 = cmd.c_str();
+   //     system(command2);}
+   //}
 }

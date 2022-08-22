@@ -27,7 +27,8 @@ python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
 - ``--task``   :  skim/hitresolution 
-- ``--isTest`` :  will pass one root file on slurm as cross-check
+- ``--isTest`` :  will pass one root file on slurm as cross-check.
+
 Hadd root files and launch plotting script ``macros/Resolutions.cc``
 ```python
 python postprocessing.py --workdir mytestDIR
@@ -76,7 +77,8 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 - []()
 - [11.11 CPE reparameterization update](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
 ## References:
-- [ CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
+- [Phase 1 Upgrade Detector DetId schema](https://github.com/cms-sw/cmssw/blob/master/Geometry/TrackerNumberingBuilder/README.md)
+- [CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
 - [Project CMSSW displayed by LXR](https://cmssdt.cern.ch/lxr/source/DataFormats/SiStripCluster/interface/SiStripClusterTools.h)
 - ["Measurement of Associated Z-Boson and b-Jet Production in Proton-Proton Collisions with the CMS Experiment"](http://cdsweb.cern.ch/record/1476930)
 - [PHD-thesis Chapter4:Associated top-quark-pair and b-jetproduction in the dilepton channelat√s = 8  TeV as test of QCDand background to tt+Higgsproduction](https://bib-pubdb1.desy.de/record/222384/files/thesis.pdf)

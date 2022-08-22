@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Package:          CalibTracker/SiStripHitResolution
 // Class:            HitResol
-// Original Authors:  Denis Gele and Kathryn Coldham
+// Original Authors: Denis Gele and Kathryn Coldham
 //                   adapted from HitEff
 //                   modified by Khawla Jaffel for CPE studies
 //
@@ -108,7 +108,7 @@ HitResol::HitResol(const edm::ParameterSet& conf):
   //tracks_token_( consumes<edm::View<reco::Track> >( conf.getParameter<edm::InputTag>("Tracks") )),
   trackerEvent_token_( consumes< MeasurementTrackerEvent>(conf.getParameter<edm::InputTag>("trackerEvent")) ),
   
-  useLegacyError(conf.existsAs<bool>("useLegacyError") ? conf.getParameter<bool>("useLegacyError") : true),
+  useLegacyError(conf.existsAs<bool>("useLegacyError") ? conf.getParameter<bool>("useLegacyError") : true), // false TODO
   maxChgOneMIP(conf.existsAs<float>("maxChgOneMIP") ? conf.getParameter<double>("maxChgOneMIP") : -6000.),
   m_algo(useLegacyError ? Algo::legacy : (maxChgOneMIP < 0 ? Algo::mergeCK : Algo::chargeCK)),
   
@@ -151,30 +151,41 @@ void HitResol::beginJob(){
     fs->file().SetCompressionSettings(compSettings);
   }
 
-  reso = fs->make<TTree>("reso","tree hit pairs for resolution studies");
+  reso = fs->make<TTree>("reso","tree hit pairs for resolution and CPE studies");
   reso->Branch("momentum",&mymom,"momentum/F");
   reso->Branch("numHits",&numHits,"numHits/I");
   reso->Branch("trackChi2",&ProbTrackChi2,"trackChi2/F");
   reso->Branch("detID1",&iidd1,"detID1/I");
+  reso->Branch("detID2",&iidd2,"detID2/I");
   reso->Branch("pitch1",&mypitch1,"pitch1/F");
-  reso->Branch("pitch2",&mypitch_2,"pitch2/F");
+  reso->Branch("pitch2",&mypitch2,"pitch2/F");
   reso->Branch("StripCPE1_simple_pos_error",&StripCPE1_smp_pos_error,"StripCPE1_simple_pos_error/F");
   reso->Branch("StripCPE2_simple_pos_error",&StripCPE2_smp_pos_error,"StripCPE2_simple_pos_error/F");
   reso->Branch("clusterW1",&clusterWidth,"clusterW1/I");
-  reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
-  reso->Branch("expectedW1",&expWidth,"expectedW1/F");        // from hit 1 
-  reso->Branch("StripErrorSquared1",&uerr2,"StripErrorSquared1/F");
-  reso->Branch("atEdge1",&atEdge,"atEdge1/F");
-  reso->Branch("simpleRes",&simpleRes,"simpleRes/F");
-  reso->Branch("detID2",&iidd2,"detID2/I");
   reso->Branch("clusterW2",&clusterWidth_2,"clusterW2/I");
+  reso->Branch("clusterSize1",&N1,"clusterSize1/I");
+  reso->Branch("clusterSize2",&N2,"clusterSize2/I");
+  reso->Branch("clusterCharge1",&clusterCharge,"clusterCharge1/I");
   reso->Branch("clusterCharge2",&clusterCharge_2,"clusterCharge2/I");
+  reso->Branch("expectedW1",&expWidth,"expectedW1/F");        // from hit 1  expected track width 
   reso->Branch("expectedW2",&expWidth_2,"expectedW2/F");     // from hit 2  
+  reso->Branch("driftAlpha",&driftAlpha,"driftAlpha/F");     
+  reso->Branch("driftAlpha_2",&driftAlpha_2,"driftAlpha_2/F");
+  reso->Branch("trackWidth",&trackWidth,"trackWidth/F");
+  reso->Branch("trackWidth_2",&trackWidth_2,"trackWidth_2/F");
+  reso->Branch("StripErrorSquared1",&uerr2,"StripErrorSquared1/F");
   reso->Branch("StripErrorSquared2",&uerr2_2,"StripErrorSquared2/F");
+  reso->Branch("atEdge1",&atEdge,"atEdge1/F");
   reso->Branch("atEdge2",&atEdge_2,"atEdge2/F");
+  reso->Branch("Nstrips1",&Nstrips,"Nstrips1/I");  
+  reso->Branch("Nstrips2",&Nstrips_2,"Nstrips2/I");  
+  reso->Branch("simpleRes",&simpleRes,"simpleRes/F");
   reso->Branch("pairPath",&pairPath,"pairPath/F");
+  reso->Branch("pairsOnly",&pairsOnly,"pairsOnly/I");
   reso->Branch("hitDX",&hitDX,"hitDX/F");                   // measured hit
   reso->Branch("trackDX",&trackDX,"trackDX/F");             // predicted  track
+  reso->Branch("thickness",&thickness,"thickness/F");
+  reso->Branch("thickness_2",&thickness_2,"thickness_2/F");
   reso->Branch("trackDXE",&trackDXE,"trackDXE/F");
   reso->Branch("trackParamX",&trackParamX,"trackParamX/F");
   reso->Branch("trackParamY",&trackParamY,"trackParamY/F");
@@ -184,7 +195,8 @@ void HitResol::beginJob(){
   reso->Branch("trackParamYE",&trackParamYE,"trackParamYE/F");
   reso->Branch("trackParamDXDZE",&trackParamDXDZE,"trackParamDXDZE/F");
   reso->Branch("trackParamDYDZE",&trackParamDYDZE,"trackParamDYDZE/F");
-  reso->Branch("pairsOnly",&pairsOnly,"pairsOnly/I");
+  reso->Branch("N1uProj",&N1uProj,"N1uProj/F");  
+  reso->Branch("N2uProj",&N2uProj,"N2uProj/F");  
   treso = fs->make<TTree>("treso","tree tracks  for resolution studies");
   treso->Branch("track_momentum",&track_momentum,"track_momentum/F");
   treso->Branch("track_pt",&track_pt,"track_pt/F");
@@ -192,7 +204,7 @@ void HitResol::beginJob(){
   treso->Branch("track_phi",&track_phi,"track_phi/F");
   treso->Branch("track_trackChi2",&track_trackChi2,"track_trackChi2/F");
   treso->Branch("track_width",&expWidth,"track_width/F");  // from 1D HIT 
-  treso->Branch("NumberOf_tracks",&NumberOf_tracks,"Nbr tracks/F");  
+  treso->Branch("NumberOf_tracks",&NumberOf_tracks,"NumberOf_tracks/I");  
   
   events = 0;
   EventTrackCKF = 0;
@@ -287,42 +299,50 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 //   // *************** SiStripCluster Collection ***************
 //   const edmNew::DetSetVector<SiStripCluster>& input = *theClusters;
 // List of variables for SiStripHitResolution ntuple
+   StripCPE1_smp_pos_error = 0;
+   StripCPE2_smp_pos_error = 0;
+   StripErrorSquared1      = 0;
+   StripErrorSquared2      = 0;
+   uerr2            = 0;
+   uerr2_2          = 0;
    mymom            = 0;
    numHits          = 0;
    ProbTrackChi2    = 0;
    iidd1            = 0;
+   iidd2            = 0;
    mypitch1         = 0;
-   mypitch_2        = 0;
-   StripCPE1_smp_pos_error = 0;
-   StripCPE2_smp_pos_error = 0;
+   mypitch2         = 0;
    clusterWidth     = 0;
    clusterCharge    = 0;
-   expWidth         = 0;
-   StripErrorSquared1 = 0;
-   StripErrorSquared2 = 0;
-   atEdge           = 0;
-   simpleRes        = 0;
-   iidd2            = 0;
    clusterCharge_2  = 0;
+   expWidth         = 0;
    expWidth_2       = 0;
+   atEdge           = 0;
    atEdge_2         = 0;
-   pairPath	    = 0;
-   hitDX	    = 0;
-   trackDX	    = 0;
-   trackDXE	    = 0;
+   simpleRes        = 0;
+   pairPath	        = 0;
+   hitDX	        = 0;
+   driftAlpha       = 0;
+   driftAlpha_2     = 0;
+   thickness        = 0;
+   thickness_2      = 0;
+   trackWidth       = 0;
+   trackWidth_2     = 0;
+   trackDX	        = 0;
+   trackDXE	        = 0;
    trackParamX      = 0;
    trackParamY      = 0;
-   trackParamDXDZ   = 0;
-   trackParamDYDZ   = 0;
    trackParamXE     = 0;
    trackParamYE     = 0;
+   trackParamDXDZ   = 0;
+   trackParamDYDZ   = 0;
    trackParamDXDZE  = 0;
    trackParamDYDZE  = 0;
    pairsOnly        = 0;
-   N1 = 0;
-   N2 = 0;
-   uerr2   = 0;
-   uerr2_2 = 0;
+   N1               = 0;
+   N2               = 0;
+   N1uProj          = 0;
+   N2uProj          = 0;
   // Tracking
   const   reco::TrackCollection *tracksCKF=trackCollectionCKF.product();
 
@@ -361,6 +381,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
       numHits = 0;
       uerr2   = 0;
       uerr2_2 = 0;
+
 //    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
 //    std::cout<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 //    std::cout<<"numhits "<< itraj->foundHits()  <<std::endl;
@@ -387,7 +408,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           const auto stripdet = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit( hit1->geographicalId()));
           const StripTopology& Topo  = stripdet->specificTopology();
           int Nstrips = Topo.nstrips();
-          mypitch1 = stripdet->surface().bounds().width() / Topo.nstrips();
+          mypitch1  = stripdet->surface().bounds().width() / Topo.nstrips();
+          thickness = stripdet->surface().bounds().thickness();
           StripCPE1_smp_pos_error = mypitch1/sqrt(12);
 
           const auto det = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(mypointhit->geographicalId()));
@@ -411,10 +433,10 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           //histos2d_["dQdX_vs_trackpT"]->Fill(dQdX, track_momentum);
           
           
-          
           if (hit1d) {
              const auto& cluster = *(hit1d->cluster());
-//             float myres = getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
+             driftAlpha  = drift.x() / drift.z();
+             trackWidth  = getTrackWidth(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
              clusterWidth = hit1d->cluster()->amplitudes().size();
              clusterCharge = hit1d->cluster()->charge();
@@ -422,6 +444,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
              uint16_t firstStrip = hit1d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit1d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
+             N1uProj = afp;
           
              switch (m_algo) {
                 case Algo::chargeCK: {
@@ -442,7 +465,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
           if (hit2d) {
              const auto& cluster = *(hit2d->cluster());
-//             float myres = getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
+             driftAlpha_2  = drift.x() / drift.z();
+             trackWidth_2  = getTrackWidth(det,trackDirection,*hit2d,expWidth,&mypitch1,drift);
              getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
              clusterWidth = hit2d->cluster()->amplitudes().size();
              clusterCharge = hit2d->cluster()->charge();
@@ -450,6 +474,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
              uint16_t firstStrip = hit2d->cluster()->firstStrip();
              uint16_t lastStrip = firstStrip + (hit2d->cluster()->amplitudes()).size() -1;
              atEdge = (firstStrip == 0 || lastStrip == (Nstrips-1) );
+             N2uProj = afp;
           
              switch (m_algo) {
                 case Algo::chargeCK: {
@@ -514,11 +539,11 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
           const auto stripdet_2 = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(myhit2->geographicalId()));
           const StripTopology& Topo_2  = stripdet_2->specificTopology();
           int Nstrips_2 = Topo_2.nstrips();
-          float mypitch_2 = stripdet_2->surface().bounds().width() / Topo_2.nstrips();
+          float mypitch2 = stripdet_2->surface().bounds().width() / Topo_2.nstrips();
+          thickness_2 = stripdet_2->surface().bounds().thickness();        
+          StripCPE2_smp_pos_error = mypitch2/sqrt(12);
           
-          StripCPE2_smp_pos_error = mypitch_2/sqrt(12);
-          
-          if ( mypitch1 != mypitch_2 ) return;  // for PairsOnly
+          if ( mypitch1 != mypitch2 ) return;  // for PairsOnly
 
           const auto det_2 = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(myhit2->geographicalId()));
 
@@ -526,7 +551,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
           const auto hit1d_2 = dynamic_cast<const SiStripRecHit1D*>(myhit_2);
           if (hit1d_2) {
-             getSimHitRes(det_2,trackDirection_2,*hit1d_2,expWidth_2,&mypitch_2,drift_2);
+             driftAlpha_2  = drift_2.x() / drift_2.z();
+             trackWidth_2  = getTrackWidth(det_2,trackDirection_2,*hit1d_2,expWidth_2,&mypitch2,drift_2);
+             getSimHitRes(det_2,trackDirection_2,*hit1d_2,expWidth_2,&mypitch2,drift_2);
              clusterWidth_2 = hit1d_2->cluster()->amplitudes().size();
              clusterCharge_2 = hit1d_2->cluster()->charge();
              uint16_t firstStrip_2 = hit1d_2->cluster()->firstStrip();
@@ -536,8 +563,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es){
 
           const auto hit2d_2 = dynamic_cast<const SiStripRecHit2D*>(myhit_2);
           if (hit2d_2) {
-//             float myres_2 = getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch_2,drift_2);
-             getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch_2,drift_2);
+             driftAlpha_2  = drift_2.x() / drift_2.z();
+             trackWidth_2  = getTrackWidth(det_2,trackDirection_2,*hit2d_2,expWidth_2,&mypitch2,drift_2);
+             getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch2,drift_2);
              clusterWidth_2 = hit2d_2->cluster()->amplitudes().size();
              clusterCharge_2 = hit2d_2->cluster()->charge();
              uint16_t firstStrip_2 = hit2d_2->cluster()->firstStrip();
@@ -653,7 +681,27 @@ bool HitResol::isDoubleSided(unsigned int iidd, const TrackerTopology* tTopo) co
     return false;
 }
 
-//float HitResol::getSimHitRes(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float& trackWidth, float* pitch, LocalVector& drift){
+float HitResol::getTrackWidth(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float& trackWidth, float* pitch, LocalVector& drift){
+
+  const auto stripdet = dynamic_cast<const StripGeomDetUnit*>(det);
+  const auto& topol = dynamic_cast<const StripTopology&>(stripdet->topology());
+
+  LocalPoint position = recHit.localPosition();
+  (*pitch) = topol.localPitch(position);
+
+  float anglealpha = 0;
+  if (trackdirection.z() != 0) {
+    anglealpha = atan(trackdirection.x() / trackdirection.z()) * TMath::RadToDeg();
+  }
+
+  float thickness = stripdet->surface().bounds().thickness();
+  float tanalpha  = tan(anglealpha * TMath::DegToRad());
+  float tanalphaL = drift.x() / drift.z();
+  (trackWidth) = fabs((thickness / (*pitch)) * tanalpha - (thickness / (*pitch)) * tanalphaL);
+
+  return trackWidth;
+}
+
 void HitResol::getSimHitRes(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float& trackWidth, float* pitch, LocalVector& drift){
   const auto stripdet = dynamic_cast<const StripGeomDetUnit*>(det);
   const auto& topol = dynamic_cast<const StripTopology&>(stripdet->topology());
@@ -701,11 +749,11 @@ double HitResol::getSimpleRes(const TrajectoryMeasurement* traj1){
 
 //traj1 is the matched trajectory...traj2 is the original
 bool HitResol::getPairParameters(const MagneticField* magField_, AnalyticalPropagator& propagator, const TrajectoryMeasurement* traj1, const TrajectoryMeasurement* traj2, float & pairPath,float & hitDX, float & trackDX, float & trackDXE, float & trackParamX, float &trackParamY , float & trackParamDXDZ, float &trackParamDYDZ , float & trackParamXE, float &trackParamYE, float & trackParamDXDZE, float &trackParamDYDZE){
-  pairPath  = 0;
-  hitDX     = 0;
-  trackDX   = 0;
-  trackDXE  = 0;
-
+  
+  pairPath        = 0;
+  hitDX           = 0;
+  trackDX         = 0;
+  trackDXE        = 0;
   trackParamX	  = 0;
   trackParamY	  = 0;
   trackParamDXDZ  = 0;

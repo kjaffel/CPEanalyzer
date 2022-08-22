@@ -1,5 +1,17 @@
 import sys
+import os, os.path
 sys.dont_write_bytecode=True
+import ROOT
+import subprocess
+import batch_slurm
+import argparse
+import glob 
+import yaml
+import numpy as np
+
+from pprint import pprint
+from collections import defaultdict
+from functools import partial
 
 import logging
 LOG_LEVEL = logging.DEBUG
@@ -28,19 +40,8 @@ try:
                 )
     stream.setFormatter(formatter)
 except ImportError:
-    print(" Add colours to the output of Python logging module via : https://pypi.org/project/colorlog/")
+    print(" You can add colours to the output of Python logging module via : https://pypi.org/project/colorlog/")
     pass
-
-import os, os.path
-import ROOT
-import subprocess
-import batch_slurm
-import argparse
-import glob 
-import yaml
-from pprint import pprint
-from collections import defaultdict
-from functools import partial
 
 class SampleTask:
     def __init__(self, name, inputFiles=None, outputFile=None, config=None):
@@ -58,7 +59,7 @@ def getTasks(analysisCfgs=None):
         tasks.append(SampleTask(sName, outputFile="{}.root".format(sName), config=sConfig))
     return tasks
 
-def FINALIZE_JOBS(workdir='', finalize=False):
+def finalize_jobs(workdir='', finalize=False):
     resultsdir = os.path.join(workdir, "outputs")
     cwd = os.getcwd()
     analysisCfgs = os.path.join(cwd, workdir, "analysis.yml")
@@ -108,30 +109,107 @@ def FINALIZE_JOBS(workdir='', finalize=False):
             else:
                 logger.info("All tasks finalized")
 
-def RUN_PLOTTER(workdir=None):
+    
+units     = {'cm' :1 , 'pitch':0 } #, pitch =0 / cm =1
+compaigns = {'pre':0 , 'ul'   :1 } 
+
+categories= { 
+            # 'cat1':  """(clusterW1 == clusterW2) && clusterW1 == {clw} && clusterW2 == {clw} \n 
+            #       && expectedW1 > clusterW1 +2  && expectedW2 > clusterW2 +2""", 
+             'cat1':  """(clusterW1 == clusterW2) && clusterW1 == {clw} && clusterW2 == {clw} """,
+            # 'cat2':  """(clusterW1 == clusterW2) && clusterW1 == 1 && clusterW2 == 1 \n
+            #       && expectedW1 <= {trkw} && expectedW2 <= {trkw}""",
+            # 'cat3':  """expectedW1 >= clusterW1 && expectedW2 >= clusterW2 \n
+            #       && expectedW1 == {trkw} && expectedW2 == {trkw}""",
+            #'cat4':  """ ((- expectedW1 + clusterW1) == 1 || (- expectedW1 + clusterW1) == 2) \n
+            #       && ((- expectedW2 + clusterW2) == 1 || (- expectedW2 + clusterW2) == 2) \n
+            #       && expectedW1 == {trkw} && expectedW2 == {trkw}""",
+            # 'cat5':  """clusterW1 <= 4 && clusterW2 <= 4 \n
+            #       && expectedW1 == {trkw} && expectedW2 == {trkw}""", 
+            # 'cat6':"""( ( abs(driftAlpha) <= {alpham} &&  abs(driftAlpha) >= {alphap} ) 
+            #       ||   ( abs(driftAlpha_2) <= {alpham} && abs(driftAlpha_2) >= {alphap} ) ) \n"""
+            # 'cat6':""" (abs(driftAlpha) == {alpha} || abs(driftAlpha_2) == {alpha}) \n""",
+            #  'cat7':""" (clusterW1 == clusterW2) && (N1uProj == {afp} || N1uProj == {afp}) \n
+            #        && (clusterW1 <= 4 && clusterW2 <= 4)""",
+        }
+    
+fit_rngs = { 
+            'cat1': { 'cluster_w': np.arange(1, 5), 'track_w': 'cat1' },
+                #'HC': { 'cluster_w': np.arange(5, 10), 'track_w': 'cat1' },
+                #'LC': { 'cluster_w': np.arange(1, 5), 'track_w': 'cat1' }
+            'cat2': { 'cluster_w': 'cat2', 'track_w': np.arange(0.2, 1., 0.2) },
+            'cat3': { 'cluster_w': 'cat3', 'track_w': np.arange(1.1, 5., 4.) },
+            'cat4': { 'cluster_w': 'cat4', 'track_w': np.arange(0.2, 3., 0.2) },
+            'cat5': { 'cluster_w': 'cat5', 'track_w': np.arange(0.2, 4., 0.2) },
+            'cat6': { 'cluster_w': 'cat6', 'track_w': np.arange(0., 0.1, 0.01) },
+            'cat7': { 'cluster_w': 'cat7', 'track_w': np.arange(0., 1.6, 0.25) },
+        }
+    
+def runPlotter(workdir, run):
     ROOT.gROOT.ProcessLine(".L ../macros/Resolutions.cc")
-    units = {'pitch':0 }#, 'cm':1} 
-    compaigns = {'PreLegacy':0}#, 'ULegacy':1}
-    for k1 in compaigns.keys():
+    
+    for cat, cut in categories.items():
         for idx, k2 in enumerate(units.keys()):
-            dircreated = False 
-            for rootfile in glob.glob(os.path.join(workdir, 'outputs','*.root')): 
-                rootpath = rootfile.replace('.root', '')
-                try:
-                    logger.debug("Resolution from 1D gaussian fit for {} compaign in {} units :".format(k1, k2) )
-                    logger.debug(" for file : {}".format( rootfile))
-                    ROOT.Resolutions(units[k2], compaigns[k1], rootfile, rootpath, dircreated)
-                    dircreated = True
-                except subprocess.CalledProcessError:
-                    logger.error("Failed to run .L ../macros/Resolutions.cc with : {0}".format(" ".join(rootfile)))
+            
+            dir_created = False 
+            for rf in glob.glob(os.path.join(workdir, 'outputs','*.root')): 
+                
+                rp = rf.replace('.root', '')
+                if 'readwithJSROOT' in rp: continue
+                
+                wFix = 'cluster_w' if cat != 'cat1' else 'track_w'
+                wVar = 'cluster_w' if cat == 'cat1' else 'track_w'
+                for w in fit_rngs[cat][wVar]:
+                    if not cat in ['cat1', 'cat6', 'cat7']:
+                        trkw = round(w, 2)
+                        clw  = fit_rngs[cat]['cluster_w']
+                        cluster_cut = cut.format(trkw=trkw)
+                    elif cat == 'cat6':
+                        alpha  = w
+                        alpham = alpha - 0.01
+                        alphap = alpha
+                        trkw  = 'None_driftalpha{}'.format(alpha)
+                        clw   = 'cat6'
+                        #cluster_cut = cut.format(alpham=alpham, alphap=alphap)
+                        cluster_cut = cut.format(alpha=alpha)
+                    elif cat == 'cat7':
+                        afp  = w
+                        trkw = 'None_afp{}'.format(afp)
+                        clw  = 'cat7'
+                        cluster_cut = cut.format(afp=afp)
+                    else:
+                        trkw = fit_rngs[cat]['track_w']
+                        clw  = w
+                        cluster_cut = cut.format(clw=clw)
+
+                    cltrk_w = '_clusterW{}_trackW{}'.format(clw, str(trkw).replace('.', 'p'))
+                    try:
+                        logger.debug("Resolution from 1D gaussian fit for {}Legacy compaign in {} units :".format(run, k2) )
+                        logger.debug(" for file : {}".format( rf))
+                        logger.debug(" cut = {}".format(cluster_cut))
+                        ROOT.Resolutions(units[k2], compaigns[run], rf, rp, cltrk_w, cluster_cut, False)
+                        dir_created = True
+                    except subprocess.CalledProcessError:
+                        logger.error("Failed to run .L ../macros/Resolutions.cc with : {0}".format(" ".join(rf)))
+
+    for f in ['CutFlowReports', 'HitResolutionValues', 'GaussianFits']:
+        dir_ = os.path.join(workdir,'results', f)
+        if not os.path.isdir(dir_):
+            os.makedirs(dir_)
+        try:
+            cmd = ['mv', './'+ f +'_*', dir_ ]
+            subprocess.check_call(" ".join(cmd), shell=True)
+        except:
+            logger.error("Failed to run {0}".format(" ".join(cmd)))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RUN CPE FIANLIZE')
-    parser.add_argument('--finalize', action='store_true', default=True, help='')
-    parser.add_argument('--workdir', required=True, help='')
+    parser.add_argument('--finalize', action='store_true', default=True, help='Will hadd the finialized outputs first')
+    parser.add_argument('--workdir', required=True, help='slurm output dir')
+    parser.add_argument('--run', required=True, choices= ['ul', 'pre'], help='stand for the compaigns, ul is ULegacy and pre is PreULegacy')
     
     options = parser.parse_args()
     
-    FINALIZE_JOBS(workdir=options.workdir, finalize=options.finalize)
+    finalize_jobs(workdir=options.workdir, finalize=options.finalize)
     
-    RUN_PLOTTER(workdir=options.workdir)
+    runPlotter(workdir=options.workdir, run=options.run)
