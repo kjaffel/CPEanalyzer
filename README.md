@@ -3,15 +3,16 @@ Cluster Parameter Estimator: algorithm used to determine the position and errors
 Method used from CMSSW - StripCPEfromTrackAngle; Takes the track angle estimate into account when applying the Lorentz angle and back plane correction, and uses a resolution parameterization as a function of the expected cluster width. 
 
 This repositry is based on [Hit resolution repositry](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master) and large part of the code have been re-used for CPE studies purpose on the top of [CPEanalayser](https://github.com/delaere/cmssw/tree/CPE_from-CMSSW_10_6_2/UserCode/CPEanalyzer)!
-## Recipe for your favorite CMSSW version:[current cmssw working version : 11_2_2_patch1]
+## Recipe for your favorite CMSSW version:[current cmssw working version : 11_3_0]
 ```bash
- cmsrel CMSSW_11_2_2_patch1
- cd CMSSW_11_2_2_patch1/src
+ cmsrel CMSSW_11_3_0
+ cd CMSSW_11_3_0/src
  # specific to ingrid, https://github.com/kjaffel/ZA_FullAnalysis#environment-setup-always- 
  cms_env 
  cmsenv
  mkdir SiStripCPE
- git clone https://github.com/kjaffel/CPEanalyzer -o SiStripCPE/CPEanalyzer
+ cd SiStripCPE
+ git clone https://github.com/kjaffel/CPEanalyzer
  # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideScram
  scram b 
 ```
@@ -26,7 +27,7 @@ python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 ```
 - ``-o``/ ``--output``:  Output directory 
 - ``-y``/``--yml``    :  YAML file that include your AlcaReco samples should be saved in: configs/
-- ``--task``   :  skim/hitresolution 
+- ``--task``   :  hitresolution or skim ( the later is deprecated sorry!).
 - ``--isTest`` :  will pass one root file on slurm as cross-check.
 
 Hadd root files and launch plotting script ``macros/Resolutions.cc``
@@ -57,25 +58,11 @@ Hit pairs are selected by requiring:
 ```python
 python CPEplotter.py --path to__mytestDIR
 ```
-```
-$  root ../data/tracking_ntuple.root 
-root [0] 
-Attaching file ../data/tracking_ntuple.root as _file0...
-root [1] .x macros/overlay.C 
-Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
-```
-
-```
-$  root ../data/tracking_ntuple.root 
-root [0] 
-Attaching file ../data/tracking_ntuple.root as _file0...
-root [1] .x macros/eff.C 
-Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
-```
 
 ## My Talks in Strip Calibration and Local Reconstruction meeting:
-- []()
-- [11.11 CPE reparameterization update](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
+- [Weekly Tracker DPG Meetings 2.May.22](https://indico.cern.ch/event/1140520/#2-cpe-update)
+- [Weekly Tracker DPG Meetings 9.Nov.20](https://indico.cern.ch/event/934813/#60-cpe-reparameterization)
+
 ## References:
 - [Phase 1 Upgrade Detector DetId schema](https://github.com/cms-sw/cmssw/blob/master/Geometry/TrackerNumberingBuilder/README.md)
 - [CMS SiStrip Simulation, LocalReconstruction and Calibration page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiStripCalibration)
