@@ -56,8 +56,9 @@ Hit pairs are selected by requiring:
 ## Useful Plotting macros:
 ``macros/PlottingToOls/CPEplotter.py`` is the main script used for plotting the saved resolution values in ``workdir/outputs/sample_Name/HitResolutionValues/HitResolutionValues_*.txt`` after postprocessing.
 ```python
-python CPEplotter.py --path to__mytestDIR
+python CPEplotter.py --path to__mytestDIR --run <run>
 ```
+- ``<run>`` : choices are ``ul`` or ``pre`` (ul for ULegacy or pre for pre-ULegacy)
 
 ## My Talks in Strip Calibration and Local Reconstruction meeting:
 - [Weekly Tracker DPG Meetings 2.May.22](https://indico.cern.ch/event/1140520/#2-cpe-update)
