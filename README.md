@@ -32,8 +32,9 @@ python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 
 Hadd root files and launch plotting script ``macros/Resolutions.cc``
 ```python
-python postprocessing.py --workdir mytestDIR
+python postprocessing.py --workdir mytestDIR <run>
 ```
+- ``<run>`` : choices are ``ul`` or ``pre`` (ul for ULegacy or pre for pre-ULegacy)
 ## Event, Track and Hit Selections:
 The strip hit resolution is computed by using hits in overlapping modules of the same layer (["Pair Method"](https://indico.cern.ch/event/305395/contributions/701396/attachments/580300/798934/nmccoll_3_13_RecHitRes.pdf)).
 
@@ -56,9 +57,8 @@ Hit pairs are selected by requiring:
 ## Useful Plotting macros:
 ``macros/PlottingToOls/CPEplotter.py`` is the main script used for plotting the saved resolution values in ``workdir/outputs/sample_Name/HitResolutionValues/HitResolutionValues_*.txt`` after postprocessing.
 ```python
-python CPEplotter.py --path to__mytestDIR --run <run>
+python CPEplotter.py --path <to__mytestDIR>
 ```
-- ``<run>`` : choices are ``ul`` or ``pre`` (ul for ULegacy or pre for pre-ULegacy)
 
 ## My Talks in Strip Calibration and Local Reconstruction meeting:
 - [Weekly Tracker DPG Meetings 2.May.22](https://indico.cern.ch/event/1140520/#2-cpe-update)
