@@ -32,7 +32,7 @@ python CPE4slurm.py --isTest --task hitresolution -o mytestDIR
 
 Hadd root files and launch plotting script ``macros/Resolutions.cc``
 ```python
-python postprocessing.py --workdir mytestDIR <run>
+python postprocessing.py --workdir mytestDIR --run <run>
 ```
 - ``<run>`` : choices are ``ul`` or ``pre`` (ul for ULegacy or pre for pre-ULegacy)
 ## Event, Track and Hit Selections:
