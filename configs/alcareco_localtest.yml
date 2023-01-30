@@ -1,9 +1,9 @@
 samples:
   SiStripCalMinBias_Express_Run2018D:
-    db: /store/express/Run2018D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v1/000/321/305/00000/DCD25B1E-47A0-E811-B58F-FA163EA70EE0.root
-    era: '2018'
+    db: /store/express/Run2022D/StreamExpress/ALCARECO/SiStripCalMinBias-Express-v2/000/357/885/00000/078ec23d-05c1-4c78-9d7e-4668d8c28c45.root
+    era: '2022'
     type: data
-  SiStripCalMinBias_RelValZMM_14_HI_2021:
-    db: /store/relval/CMSSW_11_2_0_pre11/RelValZMM_14/ALCARECO/SiStripCalMinBias-112X_mcRun3_2021_realistic_v13-v1/00000/653b2de2-d195-401a-add8-49e92fc79f4d.root
-    era: '112X_mcRun3_2021_realistic'
-    type: mc
+  # SiStripCalMinBias_RelValZMM_14_HI_2021:
+    # db: /store/relval/CMSSW_11_2_0_pre11/RelValZMM_14/ALCARECO/SiStripCalMinBias-112X_mcRun3_2021_realistic_v13-v1/00000/653b2de2-d195-401a-add8-49e92fc79f4d.root
+    # era: '112X_mcRun3_2021_realistic'
+    # type: mc
